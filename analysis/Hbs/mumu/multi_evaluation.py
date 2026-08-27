@@ -182,7 +182,9 @@ def plot_bdt_score(df, label):
     # One score and color for each class
     scores = [f"BDTscore_class{i}" for i in range(8)]
     colors = ['red', 'blue', 'green', 'purple', 'orange', 'brown', 'magenta', 'cyan']
+    labels = ['H→bs', 'H→uu', 'H→dd', 'H→cu', 'H→sd', 'H→bd', 'Diagonal Higgs', 'SM Background']
     
+    j=0
     for BDTscore in scores:
         print(f"------> Plotting Class Probabilities: {BDTscore} (overtraining check)")
         
@@ -197,7 +199,7 @@ def plot_bdt_score(df, label):
             # Training Set
             train_cut = f"valid==False & label=={class_idx}"
             df_train = df.query(train_cut)
-            train_tag = f"Truth {class_idx} Training"
+            train_tag = f"{labels[class_idx]} Training"
             
             print(f"---------> {train_tag}: {len(df_train)} events, Ratio: {(len(df_train)/float(len(df))) * 100.0:.2f}%")
             
@@ -208,7 +210,7 @@ def plot_bdt_score(df, label):
             # Validation Set
             valid_cut = f"valid==True & label=={class_idx}"
             df_valid = df.query(valid_cut)
-            valid_tag = f"Truth {class_idx} Validation"
+            valid_tag = f"{labels[class_idx]} Validation"
             
             print(f"---------> {valid_tag}: {len(df_valid)} events, Ratio: {(len(df_valid)/float(len(df))) * 100.0:.2f}%")
             
@@ -222,8 +224,9 @@ def plot_bdt_score(df, label):
         ax.set_title(r'$\textbf{\textit{FCC-ee}}$ $\textbf{\textit{Simulation}}$', fontsize=16, loc='left')
         ax.set_title(label, fontsize=18, loc='right')
 
-        ax.set_xlabel("Class Probability", fontsize=14, loc='right', weight='bold')  
+        ax.set_xlabel(f"Class {labels[j]} Probability", fontsize=14, loc='right', weight='bold')  
         ax.set_ylabel("Normalized to Unity", fontsize=14, loc='top', weight='bold')  
+        j+=1
         
         plt.xticks(fontsize=12)
         plt.yticks(fontsize=12)
@@ -241,7 +244,7 @@ def plot_bdt_score(df, label):
 def plot_importance(bdt, vars_list, latex_mapping,label):
     print("------>Plotting feature importance")
     print("------>Plotting inportance")
-    fig, ax = plt.subplots(figsize=(12, 6))
+    fig, ax = plt.subplots(figsize=(12, 10))
 
     # Get feature importances and sort them by importance
     importance = bdt.get_booster().get_score(importance_type='weight')
@@ -340,7 +343,7 @@ def plot_confusion_matrix(df, label):
     y_pred = df_valid["predicted_label"].to_numpy().astype(int)
 
     class_names = [
-        "Signal (Hbs)",
+        "H → bs",
         "H → uu",
         "H → dd",
         "H → cu",

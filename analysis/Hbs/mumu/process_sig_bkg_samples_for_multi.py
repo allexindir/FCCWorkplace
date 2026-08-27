@@ -231,7 +231,6 @@ def run(modes, n_folds, stage):
         "mumuH_Hsd":    4,
         "mumuH_Hbd":    5,
 
-        # Class 1
         #"mumuH":        6,  # Inclusive ZH
         "mumuH_Hbb":    6,
         "mumuH_Hcc":    6,

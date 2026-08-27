@@ -6,26 +6,40 @@ import seaborn as sns
 outdir = "/eos/user/d/dduan/FCCee/Hbs/mumu/"
 
 corr_vars = [
-    "met_p", "met_pt", "met_theta", "met_phi",
-    "met_px", "met_py", "met_pz",
-    "higgs_met_m", "higgs_met_e",
-    "total_m", "total_e",
+    # #MET
+    # "met_p", "met_pt", "met_theta", "met_phi",
+    # "met_px", "met_py", "met_pz",
+    # "higgs_met_m", "higgs_met_e",
+    # #total E and mass
+    # "total_m", "total_e",
+    # Z leptonic
     "zll_m", "zll_p", "zll_theta",
     "zll_recoil_m",
-    "leading_zll_lepton_p", "leading_zll_lepton_theta",
+    # Z leptons
+    "leading_zll_lepton_p",    "leading_zll_lepton_theta",
     "subleading_zll_lepton_p", "subleading_zll_lepton_theta",
     "zll_leptons_acolinearity", "zll_leptons_acoplanarity",
+    # Higgs candidate (dijet)
     "higgs_m",
+    # Jets
     "jet1_p", "jet1_theta", "jet1_phi", "jet1_mass",
     "jet2_p", "jet2_theta", "jet2_phi", "jet2_mass",
+    "event_d12", "event_d23", "event_d34", "event_d45",
+    "jet1_E", "jet2_E",
+    "jet1_nconst", "jet2_nconst",
+
+    # Flavor tags
     "jet1_btag", "jet2_btag",
     "jet1_stag", "jet2_stag",
-    "btag_max", "stag_other",
-    "cosTheta_miss",
+    "jet1_ctag", "jet2_ctag",
+    "jet1_utag", "jet2_utag",
+    "jet1_dtag", "jet2_dtag",
+    "jet1_Gtag", "jet2_Gtag",
+    "jet1_tautag", "jet2_tautag",
 ]
 
 # open the ROOT file, grab the events tree, load as pandas dataframe
-f = uproot.open("/eos/user/d/dduan/FCCee/Hbs/mumu/firstlook/wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240/chunk_0.root")
+f = uproot.open("/eos/user/d/dduan/FCCee/Hbs/mumu/batch_5/wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240/chunk_0.root")
 df_signal = f["events"].arrays(corr_vars, library="pd")
 
 # now just
