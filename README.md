@@ -48,6 +48,7 @@ All are personal forks (`Ang-Li-93/*`) pinned to a branch, cloned via SSH.
 
 - [documents/SETUP.md](documents/SETUP.md) — the analysis environment (`setup.sh`), venv, options, and the four non-mixable environments
 - [documents/HBS_ENVIRONMENT.md](documents/HBS_ENVIRONMENT.md) — `setup_hbs.sh`: the H→bs winter2023 legacy stack and why it exists
+- [analysis/Hbs/mumu/README.md](analysis/Hbs/mumu/README.md) — the H→bs analysis pipeline: stage 1, multiclass BDT training, final histograms/plots, combine datacards
 - [documents/WINTER2023_FASTSIM.md](documents/WINTER2023_FASTSIM.md) — `setup_winter2023.sh`: generating winter2023 IDEA fast-sim MC on SDCC
 - [documents/COMBINE.md](documents/COMBINE.md) — `run_combine.sh`: CMS Combine via the FCCSW Singularity image
 - [documents/MAPS_PIXESL.md](documents/MAPS_PIXESL.md) — the MAPS vertex → PixESL full-sim workflow (`setup_MAPS.sh`, `fcc_maps_wrapper_pixesl/`)
