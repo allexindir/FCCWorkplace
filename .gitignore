@@ -115,3 +115,7 @@ fcc_maps_wrapper_pixesl/results/
 HiggsAnalysis/
 analysis/ZH_XSec/Paper/paper_plots/
 analysis/ZH_XSec/Paper/S*/combine/run_*/
+
+# Auto-downloaded jet flavour tagger model (fetched by Hbs stage1 scripts)
+analysis/Hbs/mumu/fccee_flavtagging_edm4hep_wc*.json
+analysis/Hbs/mumu/fccee_flavtagging_edm4hep_wc*.onnx

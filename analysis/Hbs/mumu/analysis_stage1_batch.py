@@ -372,7 +372,7 @@ class RDFanalysis():
             "event_d12", "event_d23", "event_d34", "event_d45",
             "jet1_E", "jet2_E",
             "jet1_nconst", "jet2_nconst",
-            "jet1_charge", "jet2_charge",
+            # "jet1_charge", "jet2_charge",  # Defines are commented out above; keep in sync
             # Flavor tags
             "jet1_btag", "jet2_btag",
             "jet1_stag", "jet2_stag",
