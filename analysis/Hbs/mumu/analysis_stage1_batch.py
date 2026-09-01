@@ -31,14 +31,14 @@ processList = {
 
 # check the training website samples
 prodTag = "FCCee/winter2023/IDEA/"
-outputDirEos = "/eos/user/d/dduan/FCCee/Hbs/mumu/batch_5"
+outputDirEos = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/batch_5"
 eosType = "eosuser"
 nCPUS = 4
 batchQueue = 'workday'  #"longlunch"
 compGroup = "group_u_FCC.local_gen"
 runBatch = True
 
-outputDir = "/eos/user/d/dduan/FCCee/Hbs/mumu/temp_files"
+outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/temp_files"
 # outputDir= "/afs/cern.ch/user/d/dduan/private/FCCWorkplace/analysis/Hbs/mumu/ROOT_Files"
 
 ## ParticleNet flavor tagger model (winter2023), trained on 9M jets

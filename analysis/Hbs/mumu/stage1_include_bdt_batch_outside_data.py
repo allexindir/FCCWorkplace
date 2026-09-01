@@ -27,21 +27,21 @@ processList = {
     
 #prodTag     = "FCCee/winter2023/IDEA/"
 inputDir = '/eos/experiment/fcc/ee/analyses_storage/Higgs_and_TOP/HiggsFCNC/'
-outputDirEos = "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples"
+outputDirEos = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples"
 eosType     = "eosuser"
 nCPUS       = 4
 batchQueue  = "longlunch"
 compGroup   = "group_u_FCC.local_gen"
 runBatch = True
 
-outputDir = "/eos/user/d/dduan/FCCee/Hbs/mumu/temp_files_for_bdt_batch"
+outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/temp_files_for_bdt_batch"
 #userBatchConfig = "/afs/cern.ch/user/d/dduan/private/FCCWorkplace/analysis/ZH_XSec/FinalReport/S240/mumu/userBatch.Config"
 
 import ROOT
 vars_list = train_vars
 num_features = len(train_vars)
 ROOT.gInterpreter.ProcessLine(f'''
-  TMVA::Experimental::RBDT<> bdt("Z_Recoil_BDT", "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT/xgb_bdt.root");
+  TMVA::Experimental::RBDT<> bdt("Z_Recoil_BDT", "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT/xgb_bdt.root");
   computeModel1 = TMVA::Experimental::Compute<{num_features}, float>(bdt);
 ''')
 

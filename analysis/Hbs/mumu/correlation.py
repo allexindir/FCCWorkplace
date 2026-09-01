@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-outdir = "/eos/user/d/dduan/FCCee/Hbs/mumu/"
+outdir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/"
 
 corr_vars = [
     # #MET
@@ -39,7 +39,7 @@ corr_vars = [
 ]
 
 # open the ROOT file, grab the events tree, load as pandas dataframe
-f = uproot.open("/eos/user/d/dduan/FCCee/Hbs/mumu/batch_5/wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240/chunk_0.root")
+f = uproot.open("/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/batch_5/wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240/chunk_0.root")
 df_signal = f["events"].arrays(corr_vars, library="pd")
 
 # now just

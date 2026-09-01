@@ -3,10 +3,10 @@ import numpy as np
 #python examples/FCCee/higgs/mH-recoil/mumu/finalSel.py
 #Input directory where the files produced at the pre-selection level are
 # inputDir = "/afs/cern.ch/user/d/dduan/private/FCCWorkplace/analysis/Hbs/mumu/ROOT_Files"
-inputDir = "/eos/user/d/dduan/FCCee/Hbs/mumu/initial_batch1"
+inputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/initial_batch1"
 
 #Output directory for the plotting script
-outputDir = "/eos/user/d/dduan/FCCee/Hbs/mumu/Histo_Files"
+outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Histo_Files"
 
 ###Link to the dictonary that contains all the cross section informations etc...
 procDict = "FCCee_procDict_winter2023_IDEA.json"

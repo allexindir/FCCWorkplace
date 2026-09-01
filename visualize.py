@@ -4,40 +4,40 @@ import matplotlib.pyplot as plt
 import os
 import glob 
 
-outdir = "/eos/user/d/dduan/FCCee/Hbs/mumu/visualize_graphs/"
+outdir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/visualize_graphs/"
 
 samples = {
-    "H→bs (Signal)":        "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240",
-    "H→bd (Signal)":        "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hbd_W4p1MeV_ecm240",
-    "H→cu (Signal)":        "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hcu_W4p1MeV_ecm240",
-    "H→sd (Signal)":        "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hsd_W4p1MeV_ecm240",
+    "H→bs (Signal)":        "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240",
+    "H→bd (Signal)":        "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hbd_W4p1MeV_ecm240",
+    "H→cu (Signal)":        "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hcu_W4p1MeV_ecm240",
+    "H→sd (Signal)":        "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hsd_W4p1MeV_ecm240",
 
     # Other Higgs Decays
-    "H→WW":                 "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_HWW_ecm240",
-    "H→ZZ (noInv)":         "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_HZZ_noInv_ecm240",
-    "H→ττ":                 "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Htautau_ecm240",
-    "H→Zγ":                 "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_HZa_ecm240",
+    "H→WW":                 "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_HWW_ecm240",
+    "H→ZZ (noInv)":         "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_HZZ_noInv_ecm240",
+    "H→ττ":                 "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Htautau_ecm240",
+    "H→Zγ":                 "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_HZa_ecm240",
 
     # Diagonal Higgs Decay signals
-    "H→bb":                 "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hbb_ecm240",
-    "H→ss":                 "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hss_ecm240",
-    "H→cc":                 "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hcc_ecm240",
-    "H→dd":                 "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hdd_ecm240",
-    "H→uu":                 "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Huu_ecm240",
-    "H→gg":                 "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hgg_ecm240",
+    "H→bb":                 "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hbb_ecm240",
+    "H→ss":                 "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hss_ecm240",
+    "H→cc":                 "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hcc_ecm240",
+    "H→dd":                 "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hdd_ecm240",
+    "H→uu":                 "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Huu_ecm240",
+    "H→gg":                 "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hgg_ecm240",
 
     # Other backgrounds
-    "ZH (inclusive)":       "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_ecm240",
-    "ZZ":                   "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/p8_ee_ZZ_ecm240",
-    "WW (inclusive)":       "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/p8_ee_WW_ecm240",
-    "Z/γ→μμ":               "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumu_ecm240",
-    "eγ→eZ→μμ":             "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_egamma_eZ_Zmumu_ecm240",
-    "γe→eZ→μμ":             "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_gammae_eZ_Zmumu_ecm240",
-    "γγ→μμ":                "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_gaga_mumu_60_ecm240",
+    "ZH (inclusive)":       "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_ecm240",
+    "ZZ":                   "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/p8_ee_ZZ_ecm240",
+    "WW (inclusive)":       "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/p8_ee_WW_ecm240",
+    "Z/γ→μμ":               "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumu_ecm240",
+    "eγ→eZ→μμ":             "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_egamma_eZ_Zmumu_ecm240",
+    "γe→eZ→μμ":             "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_gammae_eZ_Zmumu_ecm240",
+    "γγ→μμ":                "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_gaga_mumu_60_ecm240",
 
     # Old backgrounds/signals
-    #"WW→μμ":                "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/p8_ee_WW_mumu_ecm240",
-    #"H→bb (Signal)":        "/eos/user/d/dduan/FCCee/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hbb_MEdecay_ecm240",
+    #"WW→μμ":                "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/p8_ee_WW_mumu_ecm240",
+    #"H→bb (Signal)":        "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples/wzp6_ee_mumuH_Hbb_MEdecay_ecm240",
 }                  
 
 colors = {

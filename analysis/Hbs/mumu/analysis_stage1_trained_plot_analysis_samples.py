@@ -8,11 +8,11 @@ energy         = 240.0
 collider       = 'FCC-ee'
 
 
-inputDir       = '/eos/user/d/dduan/FCCee/Hbs/mumu/Histo_Files/'
+inputDir       = '/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Histo_Files/'
 yaxis          = ['lin','log']
 stacksig       = ['stack','nostack']
 formats        = ['png','pdf']
-outdir         = '/eos/user/d/dduan/FCCee/Hbs/mumu/Final_Plots'
+outdir         = '/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Final_Plots'
 
 variables = [   #muons
                 "leading_zll_lepton_p",

@@ -6,7 +6,7 @@ ana_tex        = 'e^{+}e^{-} #rightarrow ZH #rightarrow #mu^{+}#mu^{-} + X'
 delphesVersion = '3.4.2'
 energy         = 240.0
 collider       = 'FCC-ee'
-inputDir       = '/eos/user/d/dduan/FCCee/Hbs/mumu/Histo_Files/'
+inputDir       = '/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Histo_Files/'
 yaxis          = ['lin','log']
 #yaxis          = ['lin']
 stacksig       = ['stack','nostack']
@@ -14,7 +14,7 @@ stacksig       = ['stack','nostack']
 formats        = ['png'] #['pdf','png','eps','tex']
 
 #yaxis          = ['lin']
-outdir         = '/eos/user/d/dduan/FCCee/Hbs/mumu/Final_Plots'
+outdir         = '/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Final_Plots'
 
 variables = [   #muons
                 "leading_zll_lepton_p",

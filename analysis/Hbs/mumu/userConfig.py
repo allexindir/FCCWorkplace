@@ -1,6 +1,6 @@
 import os
 
-repo = "/eos/user/d/dduan/FCCee/Hbs/mumu"
+repo = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu"
 
 class loc: pass
 loc.ROOT        = repo + '/'

@@ -315,7 +315,7 @@ def plot_efficiency(df,mode_names,label):
 #     ROOT.gErrorIgnoreLevel = ROOT.kError
 
 #     # Path to your parent directory containing the process folders
-#     base_dir = "/eos/user/d/dduan/FCCee/Hbs/mumu/initial_batch1"
+#     base_dir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/initial_batch1"
 
 #     print(f"{'Process Name':<45} | {'Events':<12} | {'Files':<5}")
 #     print("-" * 70)
