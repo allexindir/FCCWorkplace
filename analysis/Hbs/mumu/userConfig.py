@@ -3,9 +3,9 @@ import os
 repo = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu"
 
 class loc: pass
-loc.ROOT        = repo + '/'
-loc.OUT         = loc.ROOT + 'output_trained/'
-loc.DATA        = loc.ROOT + 'data'
+loc.ROOT        = repo 
+loc.OUT         = loc.ROOT + '/output_trained'
+loc.DATA        = loc.ROOT + '/data'
 loc.CSV         = loc.DATA + '/csv'
 loc.PKL         = loc.DATA + '/pkl'
 loc.PKL_Val     = loc.DATA + '/pkl_val'
@@ -19,10 +19,9 @@ loc.EOS      = repo
 loc.BDT      = loc.EOS + '/BDT'
 loc.PROD     = loc.EOS
 loc.STAGE1   = loc.PROD + '/firstlook'
-#loc.TRAIN    = loc.PROD + '/ROOT_Files'
-loc.TRAIN    = loc.PROD + '/batch_5'
-loc.TRAIN2   = loc.PROD + '/Training_4stage2/'
-loc.ANALYSIS = loc.PROD + '/BDT_analysis_samples/'
+loc.TRAIN    = loc.PROD + '/temp_files'
+loc.TRAIN2   = loc.PROD + '/Training_4stage2'
+loc.ANALYSIS = loc.PROD + '/BDT_analysis_samples'
 
 # BDT input variables
 train_vars = [

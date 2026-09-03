@@ -17,6 +17,10 @@ def get_data_paths(cur_mode, data_path):
     return glob.glob(f"{path}/*.root")
 
 def calculate_event_counts_and_efficiencies(cur_mode, files, vars_list):
+    if not files:
+        raise FileNotFoundError(
+            f"No ROOT files found for mode: '{cur_mode}'."
+        )
     total_events = 0
     dfs = []
     
@@ -25,7 +29,7 @@ def calculate_event_counts_and_efficiencies(cur_mode, files, vars_list):
             total_events += root_file["eventsProcessed"].value
         df_file = ut.get_df(f, vars_list)
         dfs.append(df_file)
-        
+
     df = pd.concat(dfs, ignore_index=True)
     eff = len(df) / total_events if total_events > 0 else 0
     
