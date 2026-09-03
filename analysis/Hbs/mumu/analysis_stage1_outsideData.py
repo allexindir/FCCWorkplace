@@ -19,7 +19,8 @@ processList = {
 }
 
 #prodTag     = "FCCee/winter2023/IDEA/"
-inputDir = '/eos/experiment/fcc/ee/analyses_storage/Higgs_and_TOP/HiggsFCNC/'
+# inputDir = '/eos/experiment/fcc/ee/analyses_storage/Higgs_and_TOP/HiggsFCNC/'
+inputDir = '/gpfs/mnt/gpfs01/usfcc/MAPS_storage/generation/DelphesEvents/winter2023/IDEA/'
 outputDirEos = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/batch_5"
 eosType     = "eosuser"
 nCPUS       = 4
