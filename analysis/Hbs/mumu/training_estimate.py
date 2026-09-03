@@ -1,3 +1,13 @@
+"""Estimate how many BDT training rows each process can supply (diagnostic only).
+
+A dry run of the cross-section-weighted mixing logic in
+``process_sig_bkg_samples_for_xgb.py``: for the chosen channel it loads the
+stage-1 ntuples from ``<EOS>/<channel>/training_estimation``, computes each
+process's stage-1 efficiency, and prints the number of BDT inputs it would
+contribute (and the pre-cut statistics that implies) so you can judge whether a
+sample has enough events before running the full preprocessing. It does **not**
+write any pickle. Supports the ``mumu`` and ``ee`` channels via ``--Channel``.
+"""
 import ROOT
 import sys, os, argparse
 import uproot
@@ -19,6 +29,16 @@ import utils as ut
 deffccdicts = "/cvmfs/fcc.cern.ch/FCCDicts"
 
 def run(channel, modes, n_folds, stage):
+  """Print per-process efficiencies and estimated BDT input counts for one channel.
+
+  Picks the signal/background sample lists for ``channel`` ("mumu" or "ee"),
+  reads cross sections from the FCC process dict (placeholder 1.0 for samples not
+  listed), then for each sample loads its ntuples, measures the stage-1
+  efficiency, and reports the cross-section-weighted number of BDT inputs it
+  would provide together with the implied pre-cut event counts. Exits if
+  ``channel`` is neither "mumu" nor "ee". ``modes``, ``n_folds`` and ``stage``
+  are accepted for CLI symmetry but not used in the estimate.
+  """
   #xsec, from http://fcc-physics-events.web.cern.ch/fcc-physics-events/Delphesevents_spring2021_IDEA.php
   xsec = {}
   xsec["mumuH"]   = 0.0067643

@@ -1,3 +1,15 @@
+"""FCCAnalyses plotting configuration for the *pre-BDT* histograms.
+
+Consumed by the FCCAnalyses ``plots`` stage. It reads the per-(process x
+selection) histogram files written by ``analysis_stage1_inputs.py`` (from
+``inputDir``) and produces the stacked/overlaid signal-vs-background figures in
+``outdir``, scaled to ``intLumi``.
+
+This is a declarative config module (no functions): ``variables`` lists which
+histograms to draw, ``selections`` maps an analysis name to the cut stages to
+plot, and ``plots`` / ``colors`` / ``legend`` / ``extralabel`` control the
+grouping, styling and labelling of each signal and background process.
+"""
 import ROOT
 
 # global parameters

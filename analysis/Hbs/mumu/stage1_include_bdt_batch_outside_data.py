@@ -1,3 +1,18 @@
+"""Stage-1 producer for the whizard FCNC signals, appending the multiclass BDT scores.
+
+Combines the two variations of the base stage-1 chain: it reads the dedicated
+whizard rare-decay samples under ``/eos/.../HiggsFCNC/`` with the newer podio
+relation naming (like ``analysis_stage1_outsideData.py``), and it evaluates the
+trained multiclass XGBoost model in the same pass (like
+``stage1_include_bdt_batch_samples.py``). Output goes to
+``outputDirEos/BDT_analysis_samples`` so the FCNC signals live alongside the
+central analysis samples.
+
+The model is loaded as a TMVA ``RBDT`` from ``BDT/xgb_bdt.root`` and wrapped in
+the ``computeModel1`` compute functor; each event gets ``BDTscore_class0..7`` and
+the renormalized ``norm_prob0..5``. ``functions.h`` is JIT-included for the
+MET/``ZHfunctions`` helpers used with the newer reco schema.
+"""
 import os
 import sys
 
@@ -56,6 +71,12 @@ model_dir = '/eos/experiment/fcc/ee/jet_flavour_tagging/winter2023/wc_pt_7classe
 # model_dir     = "/eos/experiment/fcc/ee/jet_flavour_tagging/winter2023/wc_pt_13_01_2022/"
 
 def get_file_path(url, filename):
+    """Return a local path to the flavour-tagger weight file, downloading if needed.
+
+    Prefers the pre-staged ``filename`` (e.g. on EOS) and returns its absolute
+    path if present. Otherwise it downloads ``url`` into the current working
+    directory and returns that local basename.
+    """
     if os.path.exists(filename):
         return os.path.abspath(filename)
     urllib.request.urlretrieve(url, os.path.basename(url))
@@ -141,8 +162,24 @@ int gen_q_pdg(const ROOT::VecOps::RVec<edm4hep::MCParticleData>& P, int idx) {
 """)
 
 class RDFanalysis():
+    """FCCAnalyses stage-1 analysis hooks (the framework calls these by name).
+
+    ``analysers`` builds the RDataFrame graph — the whizard-schema
+    reconstruction plus multiclass BDT evaluation — and ``output`` returns the
+    branch list to persist. Both are plain functions (no ``self``).
+    """
 
     def analysers(df):
+        """Build the whizard-sample stage-1 graph and append the multiclass BDT outputs.
+
+        Runs the same reconstruction chain as
+        ``analysis_stage1_outsideData.RDFanalysis.analysers`` (newer podio
+        naming, MET rebuilt from ReconstructedParticles) and then evaluates the
+        trained model via the ``computeModel1`` RBDT functor, defining
+        ``BDTscore_class0..7`` and the renormalized ``norm_prob0..5``.
+
+        Returns the extended dataframe.
+        """
 
         df = df.Alias("Lepton0",             "Muon_objIdx.index")
         df = df.Alias("MCRecoAssociations0", "_MCRecoAssociations_rec.index")
@@ -372,6 +409,14 @@ class RDFanalysis():
         return df
 
     def output():
+        """Return the branch list for the BDT-augmented FCNC-signal ntuple.
+
+        Matches the branch set of ``stage1_include_bdt_batch_samples`` — the
+        reconstruction/gen branches plus the multiclass BDT outputs
+        (``BDTscore_class0..7``, ``norm_prob0..5``) and the tagger branches from
+        ``jetFlavourHelper.outputBranches()`` — so signals and central samples
+        can be histogrammed together.
+        """
         branchList = [
             #MET
             "met_p", "met_pt", "met_theta", "met_phi",

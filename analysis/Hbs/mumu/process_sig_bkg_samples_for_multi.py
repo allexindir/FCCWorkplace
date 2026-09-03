@@ -1,3 +1,20 @@
+"""Build the *multiclass* BDT training table from stage-1 ntuples.
+
+Multiclass counterpart of ``process_sig_bkg_samples_for_xgb.py``. Instead of a
+binary signal/background flag it assigns each process an integer ``label`` via
+``class_mapping``:
+
+    0 = H->bs (the target signal), 1..5 = the other rare/FCNC decays
+    (H->uu, H->dd, H->cu, H->sd, H->bd), 6 = all diagonal/SM Higgs decays,
+    7 = non-Higgs SM backgrounds.
+
+Class balancing (``calculate_multiclass_BDT_input_numbers``) targets the same
+number of rows in every class (set by the smallest available class): the six
+rare classes are one process each, the SM-Higgs class (6) is split among its
+processes by cross-section, and the SM-background class (7) is likewise split by
+cross-section. The combined table (features + ``sample`` + ``label`` + ``valid``
++ ``norm_weight``) is pickled to ``<pkl>/preprocessed.pkl`` for ``train_multi.py``.
+"""
 import os
 import sys
 import argparse
@@ -13,10 +30,17 @@ from tqdm import tqdm
 deffccdicts = "/cvmfs/fcc.cern.ch/FCCDicts"
 
 def get_data_paths(cur_mode, data_path):
+    """Return the list of stage-1 ROOT files for process ``cur_mode`` under ``data_path``."""
     path = f"{data_path}/{mode_names[cur_mode]}"
     return glob.glob(f"{path}/*.root")
 
 def calculate_event_counts_and_efficiencies(cur_mode, files, vars_list):
+    """Load ``files`` for one process and return (N_generated, DataFrame, efficiency).
+
+    Same as the binary version but streams the files with a tqdm progress bar
+    and guards against a zero generated-event count. ``N_generated`` sums each
+    file's ``eventsProcessed`` counter; efficiency is ``len(df) / N_generated``.
+    """
     total_events = 0
     dfs = []
     
@@ -32,6 +56,10 @@ def calculate_event_counts_and_efficiencies(cur_mode, files, vars_list):
     return total_events, df, eff
 
 def update_dataframe_with_additional_info(df, cur_mode, class_mapping):
+    """Tag ``df`` with its ``sample`` name and integer multiclass ``label``.
+
+    Raises ``KeyError`` if ``cur_mode`` has no entry in ``class_mapping``.
+    """
     df = df.copy()
     df["sample"] = cur_mode
 
@@ -42,6 +70,15 @@ def update_dataframe_with_additional_info(df, cur_mode, class_mapping):
     return df
 
 def calculate_multiclass_BDT_input_numbers(mode_names, df, eff, xsec, class_mapping, frac):
+    """Compute per-process row counts for a class-balanced multiclass training set.
+
+    Targets an equal number of rows in every class, capped by the smallest
+    available class (``min`` over per-class available counts). Within a class the
+    budget is distributed across its processes: the SM-Higgs (6) and SM-background
+    (7) classes split by cross-section yield (``eff*xsec``), while the single-mode
+    rare classes take the whole share. Each allocation is clamped to the rows
+    actually available. Returns a dict of row counts keyed by process.
+    """
     print("Calculating 3-class BDT inputs using cross-section proportions...")
 
     # Calculate the total physical "weight" (yield) for each class
@@ -104,6 +141,12 @@ def calculate_multiclass_BDT_input_numbers(mode_names, df, eff, xsec, class_mapp
     return N_BDT_inputs
 
 def split_data_and_update_dataframe(df, N_BDT_inputs, xsec, N_events, cur_mode):
+    """Down-sample one process to its target size and add train/valid split + weight.
+
+    Draws ``N_BDT_inputs[cur_mode]`` rows (fixed seed), assigns a 70/30
+    train/validation split via the ``valid`` column, and stores
+    ``norm_weight = xsec / N_generated``.
+    """
     df = df.sample(n=N_BDT_inputs[cur_mode], random_state=1)
     df0, df1 = train_test_split(df, test_size=0.3, random_state=7)
     df.loc[df0.index, "valid"] = False
@@ -112,12 +155,18 @@ def split_data_and_update_dataframe(df, N_BDT_inputs, xsec, N_events, cur_mode):
     return df
 
 def save_data_to_pickle(dfsum, pkl_path):
+    """Create ``pkl_path`` if needed and write the combined table to ``preprocessed.pkl``."""
     print("Writing output to pickle file")
     ut.create_dir(pkl_path)
     print(f"--->Preprocessed saved {pkl_path}/preprocessed.pkl")
     dfsum.to_pickle(f"{pkl_path}/preprocessed.pkl")
 
 def get_procDict(procFile):
+    """Load and return the FCC process dictionary (cross sections, event counts, ...).
+
+    Accepts an http(s) URL or a filename; a bare filename is resolved under the
+    CVMFS ``FCCDicts`` directory. Exits with code 3 if a local file is missing.
+    """
     procDict = None
     if 'http://' in procFile or 'https://' in procFile:
         print ('----> getting process dictionary from the web')
@@ -138,6 +187,11 @@ def get_procDict(procFile):
     return procDict
 
 def update_procDict_keys(procDict, mode_names):
+    """Re-key ``procDict`` from on-disk sample names to the short process keys.
+
+    Uses the inverse of ``mode_names``; entries with no known short key keep
+    their original name.
+    """
     # Reverse the mode_names dictionary
     reversed_mode_names = {v: k for k, v in mode_names.items()}
 
@@ -147,8 +201,17 @@ def update_procDict_keys(procDict, mode_names):
         updated_dict[new_key] = value
     return updated_dict
 
-    
+
 def run(modes, n_folds, stage):
+    """Build and write the multiclass BDT training/validation table for all processes.
+
+    Resolves cross sections (process dict + hard-coded/placeholder overrides for
+    the Higgs decays), assigns each process its multiclass ``label`` via
+    ``class_mapping``, class-balances the row counts, adds the train/valid split,
+    concatenates and pickles the result. ``stage`` selects input/output paths
+    ("training" -> ``loc.TRAIN``/``loc.PKL``, else ``loc.ANALYSIS``/``loc.PKL_Val``).
+    ``modes`` and ``n_folds`` are unused.
+    """
 
     procFile = "FCCee_procDict_winter2023_IDEA.json"
     proc_dict = get_procDict(procFile)

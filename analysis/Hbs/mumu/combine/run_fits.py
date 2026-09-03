@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
-# Run the rare-decay fits on the cards produced by make_datacards.py.
-# For each scenario:
-#   1. expected (Asimov, blind) 68% and 95% CL upper limits on the signal
-#      cross-section sigma(ee -> mumuH, H -> X)
-#   2. the signal cross-section needed for 3 sigma evidence and 5 sigma
-#      discovery (bisection on expected Significance vs injected signal)
-#
-# Must be run inside the Combine standalone environment:
-#   cd HiggsAnalysis/CombinedLimit && source env_standalone.sh
-#   python3 run_fits.py
+"""Run the rare-decay fits on the cards produced by ``make_datacards.py``.
+
+For each scenario it computes:
+
+1. the expected (Asimov, blind) 68% and 95% CL upper limits on the signal
+   cross-section sigma(ee -> mumuH, H -> X);
+2. the signal cross-section needed for 3 sigma evidence and 5 sigma discovery
+   (fixed-point iteration on the expected Significance vs injected signal).
+
+Results are converted to branching-ratio limits via the recorded placeholder
+cross-section and printed as a summary table.
+
+Must be run inside the Combine standalone environment::
+
+    cd HiggsAnalysis/CombinedLimit && source env_standalone.sh
+    python3 run_fits.py
+"""
 
 import os
 import re
@@ -23,6 +30,11 @@ SCENARIOS = ["Hbs", "Huu", "Hdd", "Hcu", "Hsd", "Hbd"]
 
 
 def placeholder_xsec(wdir):
+    """Parse and return the signal placeholder cross-section (pb) from the datacard header.
+
+    ``make_datacards.py`` records it there; the fitted signal strength ``r`` is
+    measured relative to this value. Raises ``RuntimeError`` if not found.
+    """
     # generator placeholder xsec of the signal sample, recorded in the
     # datacard header by make_datacards.py (r is measured relative to it)
     with open(os.path.join(wdir, "datacard.txt")) as f:
@@ -34,11 +46,19 @@ def placeholder_xsec(wdir):
 
 
 def run(cmd, cwd):
+    """Run a shell ``cmd`` in ``cwd`` and return its combined stdout+stderr."""
     p = subprocess.run(cmd, shell=True, cwd=cwd, capture_output=True, text=True)
     return p.stdout + p.stderr
 
 
 def expected_limit(wdir, cl):
+    """Return the median expected upper limit on ``r`` at confidence level ``cl``.
+
+    Runs ``combine -M AsymptoticLimits`` on the workspace in ``wdir`` (data_obs is
+    the SM-only Asimov, so no ``-t -1`` is needed) with a tightened ``rAbsAcc``,
+    then reads the median (quantile 0.5) from the limit tree, falling back to the
+    observed value if the median row is absent.
+    """
     # data_obs is the SM-only Asimov, so no -t -1 needed. Default rAbsAcc
     # (5e-4) is larger than the limits here and freezes the bracketing at the
     # same r for every CL — tighten it. Read the limit tree for full precision.
@@ -54,6 +74,11 @@ def expected_limit(wdir, cl):
 
 
 def significance(wdir, r):
+    """Return the expected (Asimov) significance for an injected signal strength ``r``.
+
+    Runs ``combine -M Significance`` with ``--expectSignal r`` and parses the
+    reported value. Raises ``RuntimeError`` if none can be parsed.
+    """
     out = run(f"combine -M Significance workspace.root -t -1 --expectSignal {r:.6g} -n _sig", wdir)
     m = re.search(r"Significance: ([0-9.eE+-]+)", out)
     if not m:
@@ -62,6 +87,12 @@ def significance(wdir, r):
 
 
 def r_for_sigma(wdir, target, r_start):
+    """Return the signal strength ``r`` giving ``target`` sigma expected significance.
+
+    Fixed-point iteration starting from ``r_start`` (significance grows roughly
+    linearly with ``r`` here, so it converges in a few steps); returns the last
+    estimate if it does not converge within the iteration cap.
+    """
     # significance grows ~linearly with r here; fixed-point iteration converges fast
     r = r_start
     for _ in range(12):

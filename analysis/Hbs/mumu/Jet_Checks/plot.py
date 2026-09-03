@@ -39,6 +39,7 @@ PLOTS = {
 }
 
 def norm(h):
+    """Return a detached, unit-area-normalized clone of histogram ``h`` (unchanged if empty)."""
     h = h.Clone()
     h.SetDirectory(0)
     if h.Integral() > 0:

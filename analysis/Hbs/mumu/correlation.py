@@ -1,3 +1,12 @@
+"""Plot the BDT-feature correlation matrix for the H->bs signal sample.
+
+Standalone diagnostic (top-level script, no functions): reads one signal ntuple
+chunk into a DataFrame of the ``corr_vars`` features, computes the Pearson
+correlation matrix, and saves it as a seaborn heatmap
+(``correlation_matrix.png``) to inspect redundancy among the training inputs.
+The feature list mirrors ``userConfig.train_vars``. Edit the hard-coded input
+path / ``outdir`` before running.
+"""
 import uproot
 import pandas as pd
 import matplotlib.pyplot as plt

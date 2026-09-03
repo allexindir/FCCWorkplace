@@ -1,3 +1,12 @@
+"""Evaluate the trained *binary* BDT and produce its performance/diagnostic plots.
+
+Loads the preprocessed table and the joblib model saved by ``train_xgb.py``,
+scores every event with the signal probability (``BDTscore``), and writes a set
+of figures to ``loc.PLOTS``: training-vs-validation log-loss, classification
+error and AUC curves; the ROC curve; the signal/background BDT-score overlay
+(overtraining check); feature importance; the S/sqrt(S+B) significance scan; and
+per-sample efficiency vs BDT cut. Run: ``python evaluation.py``.
+"""
 import argparse
 import numbers
 from re import I
@@ -29,12 +38,14 @@ rc('text', usetex=True)
 
 
 def load_data():
+    """Load and return the preprocessed training/validation table (``<pkl>/preprocessed.pkl``)."""
     path = f"{loc.PKL}"
     df = pd.read_pickle(f"{path}/preprocessed.pkl")
     return df
 
 
 def print_input_summary(df, modes):
+    """Print the train/validation row count for each process in ``modes``."""
     print(f"__________________________________________________________")
     print(f"Input number of events:")
     for cur_mode in modes:
@@ -44,12 +55,14 @@ def print_input_summary(df, modes):
 
 
 def load_trained_model(loc):
+    """Load and return the trained BDT from ``loc.BDT/xgb_bdt.joblib``."""
     print(f"--->Loading BDT model {loc.BDT}/xgb_bdt.joblib")
     bdt = joblib.load(f"{loc.BDT}/xgb_bdt.joblib")
     return bdt
 
 
 def evaluate_bdt_model(df, bdt, vars_list):
+    """Add a ``BDTscore`` column (signal-class probability) to ``df`` and return it."""
     X = df[vars_list]
     print(f"--->Evaluating BDT model")
     df["BDTscore"] = bdt.predict_proba(X).tolist()
@@ -58,6 +71,7 @@ def evaluate_bdt_model(df, bdt, vars_list):
 
 
 def get_performance_metrics(bdt):
+    """Return ``(results, epochs, x_axis, best_iteration)`` from the model's training history."""
     print("------>Retrieving performance metrics")
     results = bdt.evals_result()
     epochs = len(results['validation_0']['error'])
@@ -66,7 +80,13 @@ def get_performance_metrics(bdt):
     return results, epochs, x_axis, best_iteration
 
 
-def plot_metrics(df,bdt,vars_list,results, epochs, x_axis, best_iteration,mode_names,latex_mappingf,final_states):    
+def plot_metrics(df,bdt,vars_list,results, epochs, x_axis, best_iteration,mode_names,latex_mappingf,final_states):
+    """Create the output plot directory and render every evaluation figure.
+
+    Picks the final-state legend label from ``final_states`` ("mumu"/"ee"), then
+    calls each individual plotting helper (log-loss, classification error, AUC,
+    ROC, BDT score, feature importance, significance scan, efficiency).
+    """
     if final_states == "mumu":
       label = r"$Z(\mu^+\mu^-)H$"
     elif final_states == "ee":
@@ -85,6 +105,7 @@ def plot_metrics(df,bdt,vars_list,results, epochs, x_axis, best_iteration,mode_n
 
 
 def plot_log_loss(results, x_axis, best_iteration,label):
+    """Plot training vs validation log-loss over boosting rounds to ``loc.PLOTS``."""
     print("------>Plotting log loss")
     fig, ax = plt.subplots()
     ax.plot(x_axis, results['validation_0']['logloss'], label='Training')
@@ -102,6 +123,7 @@ def plot_log_loss(results, x_axis, best_iteration,label):
 
 
 def plot_classification_error(results, x_axis, best_iteration, label):
+    """Plot training vs validation classification error over boosting rounds to ``loc.PLOTS``."""
     print("------>Plotting classification error")
     fig, ax = plt.subplots()
     ax.plot(x_axis, results['validation_0']['error'], label='Training')
@@ -119,6 +141,7 @@ def plot_classification_error(results, x_axis, best_iteration, label):
 
 
 def plot_auc(results, x_axis, best_iteration, label):
+    """Plot training vs validation AUC over boosting rounds to ``loc.PLOTS``."""
     print("------>Plotting AUC")
     fig, ax = plt.subplots()
     ax.plot(x_axis, results['validation_0']['auc'], label='Training')
@@ -136,6 +159,7 @@ def plot_auc(results, x_axis, best_iteration, label):
 
 
 def plot_roc(df,label):
+    """Plot the signal-vs-background ROC curve for the training and validation samples."""
     # plot ROC 1
     print("------>Plotting ROC")
     fig, axes = plt.subplots(1, 1, figsize=(5,5))
@@ -158,8 +182,9 @@ def plot_roc(df,label):
 
 
 def plot_bdt_score(df, label):
+    """Overlay the signal/background BDT-score distributions (train vs valid) as an overtraining check."""
     print("------>Plotting BDT score (overtraining check)")
-    
+
     fig, ax = plt.subplots(figsize=(8, 6))
     Bins = 20
     htype = "step"
@@ -195,6 +220,7 @@ def plot_bdt_score(df, label):
     plt.close()
 
 def plot_importance(bdt, vars_list, latex_mapping,label):
+    """Plot the BDT feature-importance (weight F-score) ranking with LaTeX feature labels."""
     print("------>Plotting feature importance")
     print("------>Plotting inportance")
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -230,6 +256,7 @@ def plot_importance(bdt, vars_list, latex_mapping,label):
 
 
 def plot_significance_scan(df,label):
+    """Scan the BDT cut and plot the S/sqrt(S+B) significance, marking the optimal threshold."""
     print("------>Plotting Significance scan")
     #compute the significance
     df_Z = ut.Significance(df[(df['isSignal'] == 1) & (df['valid'] == True)], df[(df['isSignal'] == 0) & (df['valid'] == True)], score_column = 'BDTscore', func=ut.Z, nbins=100)
@@ -253,7 +280,7 @@ def plot_significance_scan(df,label):
 
 
 def plot_efficiency(df,mode_names,label):
-    
+    """Plot the validation-sample selection efficiency vs BDT cut, one curve per process."""
     # #Plot efficiency as a function of BDT cut in each sample
     # print("------>Plotting Efficiency")
     # BDT_cuts = np.linspace(0,100,101)
@@ -352,6 +379,7 @@ def plot_efficiency(df,mode_names,label):
 
 
 def main():
+    """Load the data and model, score events, and render all evaluation plots."""
     modes = ["mumuH_Hbs", "mumuH","ZZ","WWmumu","Zll","egamma","gammae","gaga_mumu"]
     df = load_data()
     print_input_summary(df, mode_names)

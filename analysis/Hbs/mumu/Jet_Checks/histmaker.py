@@ -46,6 +46,16 @@ bins_mll    = (60,  66.0,    96.0)    # 0.5  GeV bins, dimuon (Z) mass region
 
 
 def build_graph(df, dataset):
+    """Book all m(bb) / m(mumu) / recoil histograms for one sample in a single RDF pass.
+
+    The FCCAnalyses histmaker entry point (called once per sample). It
+    auto-detects the podio relation naming for ``dataset`` (old ``Muon#0`` vs new
+    ``Muon_objIdx``), then defines the gen-level parton/visible/full/descendant
+    masses, the gen and detector-level dimuon (Z) mass and recoil, and the Durham
+    exclusive n=2 dijet mass (with and without a MET correction). Returns
+    ``(results, weightsum)`` where ``results`` is the list of booked ``Histo1D``
+    actions and ``weightsum`` is the summed event weight.
+    """
     results = []
     df = df.Define("weight", "1.0")
     weightsum = df.Sum("weight")

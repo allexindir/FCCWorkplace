@@ -1,3 +1,20 @@
+"""Build the *binary* (signal vs background) BDT training table from stage-1 ntuples.
+
+Reads the flat ntuples for every process in ``mode_names``, turns each into a
+pandas DataFrame of the ``train_vars`` features, then samples a
+cross-section-weighted mixture: the H->bs signal is taken in full and each
+background is scaled to its expected relative yield (efficiency x cross-section)
+so the training set reflects the physical background composition. Rows are
+tagged with ``sample``, ``isSignal`` (1 only for ``mumuH_Hbs``), a train/valid
+split flag ``valid``, and a ``norm_weight``. The concatenated table is written to
+``<pkl>/preprocessed.pkl`` for ``train_xgb.py``.
+
+Cross sections come from the central FCC process dictionary
+(``FCCee_procDict_winter2023_IDEA.json``), with the rare/FCNC signals assigned a
+placeholder xsec of 1. Run with ``--Stage training`` (default) to prepare the
+training pickle, or ``--Stage validation`` to prepare the analysis-sample
+pickle; the ``--Mode`` / ``--Folds`` arguments are vestigial.
+"""
 import os
 import sys
 import argparse
@@ -12,21 +29,37 @@ import json
 deffccdicts = "/cvmfs/fcc.cern.ch/FCCDicts"
 
 def get_data_paths(cur_mode, data_path):
+    """Return the list of stage-1 ROOT files for process ``cur_mode`` under ``data_path``."""
     path = f"{data_path}/{mode_names[cur_mode]}"
     return glob.glob(f"{path}/*.root")
 
 def calculate_event_counts_and_efficiencies(cur_mode, files, vars_list):
+    """Load ``files`` for one process and return (N_generated, DataFrame, efficiency).
+
+    ``N_generated`` is summed from each file's ``eventsProcessed`` counter, the
+    DataFrame holds the ``vars_list`` columns for all rows surviving stage-1, and
+    the efficiency is ``len(df) / N_generated``.
+    """
     N_events = sum([uproot.open(f)["eventsProcessed"].value for f in files])
     df = pd.concat((ut.get_df(f, vars_list) for f in files), ignore_index=True)
     eff = len(df) / N_events
     return N_events, df, eff
 
 def update_dataframe_with_additional_info(df, cur_mode, sig):
+    """Tag ``df`` with its ``sample`` name and a binary ``isSignal`` flag (1 iff ``cur_mode == sig``)."""
     df['sample'] = cur_mode
     df['isSignal'] = int(cur_mode == sig)
     return df
 
 def calculate_BDT_input_numbers(mode_names, sig, df, eff, xsec, frac):
+    """Compute how many rows to draw from each process for the training mixture.
+
+    The signal contributes ``frac[sig] * len(df[sig])`` rows. Each background is
+    scaled to its expected share of the total background yield,
+    ``eff[mode]*xsec[mode] / sum_bkg(eff*xsec)``, relative to the signal count so
+    the sampled mixture matches the physical background composition. Returns a
+    dict of row counts keyed by process.
+    """
     N_BDT_inputs = {}
     print(f"Calculating number of BDT inputs for {mode_names}")
     print(f"eff = {eff}")
@@ -37,6 +70,12 @@ def calculate_BDT_input_numbers(mode_names, sig, df, eff, xsec, frac):
     return N_BDT_inputs
 
 def split_data_and_update_dataframe(df, N_BDT_inputs, xsec, N_events, cur_mode):
+    """Down-sample one process to its target size and add train/valid split + weight.
+
+    Draws ``N_BDT_inputs[cur_mode]`` rows (fixed seed), assigns a 70/30
+    train/validation split via the ``valid`` boolean column, and stores the
+    per-event ``norm_weight = xsec / N_generated`` used for lumi scaling.
+    """
     df = df.sample(n=N_BDT_inputs[cur_mode], random_state=1)
     df0, df1 = train_test_split(df, test_size=0.3, random_state=7)
     df.loc[df0.index, "valid"] = False
@@ -45,12 +84,19 @@ def split_data_and_update_dataframe(df, N_BDT_inputs, xsec, N_events, cur_mode):
     return df
 
 def save_data_to_pickle(dfsum, pkl_path):
+    """Create ``pkl_path`` if needed and write the combined table to ``preprocessed.pkl``."""
     print("Writing output to pickle file")
     ut.create_dir(pkl_path)
     print(f"--->Preprocessed saved {pkl_path}/preprocessed.pkl")
     dfsum.to_pickle(f"{pkl_path}/preprocessed.pkl")
 
 def get_procDict(procFile):
+    """Load and return the FCC process dictionary (cross sections, event counts, ...).
+
+    Accepts an http(s) URL (fetched over the network) or a filename; a bare
+    filename is resolved under the CVMFS ``FCCDicts`` directory. Exits with code
+    3 if a local file cannot be found.
+    """
     procDict = None
     if 'http://' in procFile or 'https://' in procFile:
         print ('----> getting process dictionary from the web')
@@ -71,6 +117,12 @@ def get_procDict(procFile):
     return procDict
 
 def update_procDict_keys(procDict, mode_names):
+    """Re-key ``procDict`` from on-disk sample names to the short process keys.
+
+    Uses the inverse of ``mode_names`` (sample name -> short key) so lookups can
+    use keys like ``"mumuH_Hbs"``; entries with no known short key are kept
+    under their original name.
+    """
     # Reverse the mode_names dictionary
     reversed_mode_names = {v: k for k, v in mode_names.items()}
 
@@ -80,8 +132,18 @@ def update_procDict_keys(procDict, mode_names):
         updated_dict[new_key] = value
     return updated_dict
 
-    
+
 def run(modes, n_folds, stage):
+    """Build and write the binary BDT training/validation table for all processes.
+
+    Resolves cross sections (from the process dict, with hard-coded values for
+    the SM Higgs decays and placeholder=1 for the rare signals), then for every
+    process in ``mode_names`` loads its ntuples, tags them, samples the
+    cross-section-weighted mixture and adds the train/valid split, and finally
+    concatenates everything and pickles it. ``stage`` selects the input/output
+    location: "training" uses ``loc.TRAIN``/``loc.PKL``, otherwise the analysis
+    samples ``loc.ANALYSIS``/``loc.PKL_Val``. ``modes`` and ``n_folds`` are unused.
+    """
 
     procFile = "FCCee_procDict_winter2023_IDEA.json"
     proc_dict = get_procDict(procFile)

@@ -1,3 +1,12 @@
+"""Train the *multiclass* XGBoost classifier (8 classes).
+
+Multiclass counterpart of ``train_xgb.py``. Reads the preprocessed table from
+``process_sig_bkg_samples_for_multi.py``, splits by the ``valid`` flag, and fits
+an ``XGBClassifier`` with ``objective="multi:softprob"`` and ``num_class=8`` on
+the integer ``label`` target (0=H->bs, 1..5=other rare decays, 6=SM Higgs,
+7=SM background). The model is saved to ``BDT/xgb_bdt.root`` (TMVA/RDataFrame)
+and ``BDT/xgb_bdt.joblib`` (for ``multi_evaluation.py``). Run: ``python train_multi.py``.
+"""
 import os
 import sys
 import argparse
@@ -30,6 +39,7 @@ rc('font', **{'family': 'serif', 'serif': ['Roman']})
 rc('text', usetex=True)
 
 def run():
+    """Load the training table, fit the multiclass BDT and save it. The script entry point."""
 
     modes = ["mumuH_Hbs", "mumuH_Hbd", "mumuH_Hcu", "mumuH_Hsd",
             "mumuH_Hbb", "mumuH_Hss", "mumuH_Hcc", "mumuH_Hdd", "mumuH_Huu", "mumuH_Hgg",
@@ -59,6 +69,7 @@ def run():
     save_model(bdt, vars_list, loc.BDT)
 
 def print_stats(df, modes):
+    """Print the train/validation row count for each process in ``modes``."""
     print("__________________________________________________________")
     print("Input number of events:")
     for cur_mode in modes:
@@ -67,6 +78,11 @@ def print_stats(df, modes):
     print("__________________________________________________________")
 
 def split_data(df, vars_list):
+    """Split ``df`` by the ``valid`` flag into ``(X_train, y_train, X_valid, y_valid)`` arrays.
+
+    Features are the ``vars_list`` columns; the target is the integer ``label``
+    column (cast to int) holding the multiclass label.
+    """
     X_train = df.loc[df["valid"] == False, vars_list].to_numpy()
     y_train = df.loc[df["valid"] == False, "label"].to_numpy().astype(int)
 
@@ -76,6 +92,7 @@ def split_data(df, vars_list):
     return X_train, y_train, X_valid, y_valid
 
 def get_config_dict():
+    """Return the XGBoost hyper-parameter dict for the 8-class softprob classifier."""
     return {
         "n_estimators": 350,
         "learning_rate": 0.20,
@@ -94,6 +111,12 @@ def get_config_dict():
     }
 
 def train_model(X_train, y_train, X_valid, y_valid, config_dict, early_stopping_round):
+    """Fit and return the multiclass ``XGBClassifier`` with early stopping.
+
+    Trains on ``(X_train, y_train)`` while monitoring mlogloss/merror (set in
+    ``config_dict``) on the training and validation sets, stopping after
+    ``early_stopping_round`` rounds without validation improvement.
+    """
     bdt = xgb.XGBClassifier(**config_dict)
 
     eval_set = [(X_train, y_train), (X_valid, y_valid)]
@@ -111,6 +134,12 @@ def train_model(X_train, y_train, X_valid, y_valid, config_dict, early_stopping_
     return bdt
 
 def save_model(bdt, vars_list, output_path):
+    """Persist the trained multiclass BDT under ``output_path`` in TMVA-ROOT and joblib formats.
+
+    Writes ``xgb_bdt.root`` (via ``TMVA.Experimental.SaveXGBoost``, sized to
+    ``len(vars_list)`` inputs) and ``xgb_bdt.joblib``. Creates ``output_path`` if
+    needed.
+    """
     ut.create_dir(output_path)
     print("--->Writing xgboost model:")
     print(f"------>Saving {output_path}/xgb_bdt.root")

@@ -1,3 +1,15 @@
+"""Measure b- and s-tagging efficiency by truth-matching reco jets to gen quarks.
+
+Standalone diagnostic (top-level script, no functions) run on the H->bs signal
+ntuple. For each event it ΔR-matches the two reco jets to the gen b and s quarks
+(using the ``gen_{b,s}_theta/phi`` branches filled by the stage-1 producers),
+checks whether the higher-tag jet is the correctly-matched one, and builds:
+the truth-matched b-/s-tag score distributions, per-jet efficiency-vs-working-point
+curves (reporting eps at WP=0.7), the 2D joint (b,s) tagging efficiency, the raw
+2D b-tag/s-tag correlation per jet, and the ``btag_max``/``stag_other``
+distributions. All figures are written to ``outdir``. Edit the hard-coded input
+path / ``outdir`` before running.
+"""
 import uproot
 import numpy as np
 import matplotlib.pyplot as plt

@@ -1,3 +1,18 @@
+"""FCCAnalyses final-selection / histmaker configuration for the *pre-BDT* ntuples.
+
+Consumed by the FCCAnalyses ``final`` (or histmaker) stage: it reads the flat
+stage-1 ntuples in ``inputDir`` (the ``initial_batch1`` production), applies the
+selections in ``cutList``, and writes one histogram ROOT file per
+(process x selection) into ``outputDir`` for the plotting step
+(``analysis_stage1_plots.py``).
+
+This is the module-level config expected by the framework; it exposes the
+mandatory globals (``processList``, ``procDict``/``procDictAdd``, ``cutList``,
+``histoList``, ``nCPUS``, ...) and defines no functions. ``histoList`` keys are
+output histogram names; each value gives the input branch, axis title and
+binning. ``procDictAdd`` supplies cross-section/event-count metadata for the
+non-official samples that are absent from the central ``procDict``.
+"""
 import numpy as np
 
 #python examples/FCCee/higgs/mH-recoil/mumu/finalSel.py

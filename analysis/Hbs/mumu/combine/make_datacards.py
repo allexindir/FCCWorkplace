@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
-# Build Combine datacards for the rare Higgs decay search: one card per
-# "one rare decay vs all SM" scenario, fitting the renormalized multiclass
-# BDT score  norm_prob{i} = P(rare_i) / (P(rare_i) + P(SM Higgs) + P(SM bkg))
-# in the baseline selection.
-#
-# Inputs:  Histo_Files/<process>_sel_Baseline_no_costhetamiss_histo.root
-#          (histograms normalized to xsec*eff in pb, intLumi=1)
-# Outputs: cards/<scenario>/shapes.root + datacard.txt
-#          data_obs = SM-only Asimov (sum of backgrounds)
-#
-# Run inside any environment with ROOT (e.g. the Combine standalone env),
-# then e.g.:
-#   text2workspace.py cards/Hbs/datacard.txt
-#   combine -M AsymptoticLimits cards/Hbs/datacard.txt -t -1 -n _Hbs
+"""Build Combine datacards for the rare Higgs decay search.
+
+Produces one card per "one rare decay vs all SM" scenario, fitting the
+renormalized multiclass BDT score
+``norm_prob{i} = P(rare_i) / (P(rare_i) + P(SM Higgs) + P(SM bkg))`` in the
+baseline selection.
+
+Inputs:  ``Histo_Files/<process>_sel_Baseline_no_costhetamiss_histo.root``
+         (histograms normalized to xsec*eff in pb, intLumi=1).
+Outputs: ``cards/<scenario>/shapes.root`` + ``datacard.txt``, with
+         ``data_obs`` set to the SM-only Asimov (sum of all backgrounds).
+
+Run inside any environment with ROOT (e.g. the Combine standalone env), then
+e.g.::
+
+    text2workspace.py cards/Hbs/datacard.txt
+    combine -M AsymptoticLimits cards/Hbs/datacard.txt -t -1 -n _Hbs
+"""
 
 import os
 import ROOT
@@ -63,6 +67,13 @@ LUMI_UNC = 1.005  # placeholder luminosity lnN
 
 
 def get_shape(process, var, newname):
+    """Return the ``var`` histogram for ``process``, cleaned and scaled to lumi.
+
+    Opens the process's baseline histogram file, clones ``var`` as ``newname``,
+    folds under/overflow into the edge bins so the integral is complete, and
+    scales by ``INT_LUMI`` (the input histograms are normalized to xsec*eff at
+    intLumi=1). Raises ``RuntimeError`` if the file or histogram is missing.
+    """
     fname = os.path.join(HISTO_DIR, f"{process}_{SELECTION}_histo.root")
     f = ROOT.TFile.Open(fname)
     if not f or f.IsZombie():
@@ -86,6 +97,7 @@ def get_shape(process, var, newname):
 
 
 def get_xsec(process):
+    """Return the generator cross section (pb) stored in the process's histogram file."""
     fname = os.path.join(HISTO_DIR, f"{process}_{SELECTION}_histo.root")
     f = ROOT.TFile.Open(fname)
     xs = f.Get("crossSection").GetVal()
@@ -94,6 +106,14 @@ def get_xsec(process):
 
 
 def make_card(scenario, sig_process, var):
+    """Write the ``shapes.root`` + ``datacard.txt`` for one rare-decay scenario.
+
+    Builds the signal shape, the merged SM-Higgs (ZH) template, and each SM
+    background shape for observable ``var``; sets ``data_obs`` to the SM-only
+    Asimov (background sum); writes the shapes file and a Combine datacard
+    (rates from the histograms via ``-1``, a placeholder lumi lnN, and
+    ``autoMCStats``). Returns ``(card_path, per-process yields, observed yield)``.
+    """
     outdir = os.path.join(OUT_DIR, scenario)
     os.makedirs(outdir, exist_ok=True)
 

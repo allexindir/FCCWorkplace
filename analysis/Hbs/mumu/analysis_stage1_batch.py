@@ -1,6 +1,27 @@
-# H->bs at sqrt(s)=240 GeV: e+e- -> ZH -> mumu + (bs~+b~s)
-# Stage 1: flat ntuple production
-# Modelled on ZH_XSec/FinalReport/S240/mumu and FCCAnalyses/examples/FCCee/higgs/mH-recoil/stage1_flavor.py
+"""Stage-1 flat-ntuple producer for e+e- -> ZH -> mumu + jets at sqrt(s)=240 GeV.
+
+This is an FCCAnalyses stage-1 config run with ``fccanalysis run``. It processes
+the centrally produced winter2023/IDEA EDM4hep samples listed in ``processList``
+(inclusive ZH, the diagonal SM Higgs decays, and the SM di-boson / Zll / gamma
+backgrounds) and writes one flat ROOT ntuple per event to
+``outputDirEos/batch_5`` for downstream BDT input preparation.
+
+Per event it: selects and isolates two opposite-charge muons, removes them,
+runs exclusive 2-jet (Durham) clustering + the winter2023 ParticleNet flavour
+tagger on the remaining hadronic system, and builds the Z(->mumu) resonance,
+its recoil, the dijet Higgs candidate, MET-based observables and a gen-level
+``is_Hbs`` truth tag. The output branch list is defined in ``RDFanalysis.output``.
+
+Modelled on ZH_XSec/FinalReport/S240/mumu and
+FCCAnalyses/examples/FCCee/higgs/mH-recoil/stage1_flavor.py. The companion
+``analysis_stage1_outsideData.py`` runs the same chain over the dedicated
+whizard FCNC signal samples (which use the newer podio relation naming).
+
+The module top level also JIT-declares (via ``ROOT.gInterpreter.Declare``) the
+C++ helpers ``hbs_gen_tag`` and ``find_hbs_quark_indices`` / ``gen_q_*`` used to
+tag H->bs at gen level and to recover the b/s quark kinematics for tagger
+truth-matching.
+"""
 
 import os, copy, urllib.request
 
@@ -52,6 +73,12 @@ model_dir = '/eos/experiment/fcc/ee/jet_flavour_tagging/winter2023/wc_pt_7classe
 # model_dir = "/eos/experiment/fcc/ee/jet_flavour_tagging/winter2023/wc_pt_13_01_2022/"
 
 def get_file_path(url, filename):
+    """Return a local path to the flavour-tagger weight file, downloading if needed.
+
+    Prefers the pre-staged ``filename`` (e.g. on EOS) and returns its absolute
+    path if present. Otherwise it downloads ``url`` into the current working
+    directory and returns that local basename.
+    """
     if os.path.exists(filename):
         return os.path.abspath(filename)
     urllib.request.urlretrieve(url, os.path.basename(url))
@@ -135,8 +162,29 @@ int gen_q_pdg(const ROOT::VecOps::RVec<edm4hep::MCParticleData>& P, int idx) {
 """)
 
 class RDFanalysis():
+    """FCCAnalyses stage-1 analysis hooks (the framework calls these by name).
+
+    ``analysers`` builds the RDataFrame computation graph (selections + all the
+    derived columns), and ``output`` returns the list of branches to persist.
+    Both are plain functions (no ``self``): the framework invokes them as
+    ``RDFanalysis.analysers(df)`` / ``RDFanalysis.output()``.
+    """
 
     def analysers(df):
+        """Build and return the stage-1 RDataFrame graph for centrally produced samples.
+
+        Applies the full selection and derivation chain to ``df``:
+        muon selection + isolation and the >=2 opposite-charge-muon filter;
+        muon removal followed by exclusive 2-jet clustering and ParticleNet
+        flavour tagging on the hadronic remainder; the dijet Higgs candidate and
+        per-jet tag/kinematic variables; the Z(->mumu) resonance, its recoil and
+        the sorted-lepton observables; MET and total/partial reconstructed
+        mass-energy; and the gen-level ``is_Hbs`` tag plus gen b/s quark
+        kinematics. Uses the old podio relation naming (``Muon#0`` etc.).
+
+        Returns the extended dataframe (the Z window cuts are intentionally left
+        commented out so selections stay open for downstream studies).
+        """
 
         df = df.Alias("Lepton0", "Muon#0.index")
         df = df.Alias("MCRecoAssociations0", "MCRecoAssociations#0.index")
@@ -350,6 +398,14 @@ class RDFanalysis():
         return df
 
     def output():
+        """Return the list of branch names to write to the stage-1 ntuple.
+
+        Covers MET, total/partial reconstructed mass-energy, the leptonic Z and
+        its recoil, the dijet Higgs candidate, per-jet kinematics and all
+        flavour-tag scores, the event-level ``cosTheta_miss``, the gen ``is_Hbs``
+        tag and the gen b/s quark kinematics, plus the flavour-tagger's own
+        output branches appended via ``jetFlavourHelper.outputBranches()``.
+        """
         branchList = [
             # MET
             "met_p", "met_pt", "met_theta", "met_phi",

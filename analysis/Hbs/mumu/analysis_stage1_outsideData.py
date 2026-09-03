@@ -1,6 +1,25 @@
-# H->bs at sqrt(s)=240 GeV: e+e- -> ZH -> mumu + (bs~+b~s)
-# Stage 1: flat ntuple production
-# Modelled on ZH_XSec/FinalReport/S240/mumu and FCCAnalyses/examples/FCCee/higgs/mH-recoil/stage1_flavor.py
+"""Stage-1 flat-ntuple producer for the dedicated whizard FCNC/rare-decay signals.
+
+Sibling of ``analysis_stage1_batch.py`` with an identical physics chain, but run
+over the privately produced whizard samples staged under
+``/eos/.../HiggsFCNC/`` (H->bs, H->bd, H->sd, H->cu and the H->uu / H->dd
+diagonal comparators). Two things differ from the central-sample version:
+
+- it reads with the newer podio relation naming (``Muon_objIdx``,
+  ``_MCRecoAssociations_rec``, ``_Particle_daughters``, ...);
+- MET is rebuilt from the ReconstructedParticles via
+  ``ZHfunctions::missingEnergy`` (from the JIT-included ``functions.h``) rather
+  than taken from a stored MissingET collection.
+
+Everything else — muon selection/isolation, muon removal + exclusive 2-jet
+clustering + ParticleNet tagging, the dijet Higgs candidate, the Z(->mumu)
+resonance and recoil, the gen ``is_Hbs`` tag and gen b/s quark kinematics — is
+the same, and the output branch list matches so the two productions can be
+merged downstream.
+
+Modelled on ZH_XSec/FinalReport/S240/mumu and
+FCCAnalyses/examples/FCCee/higgs/mH-recoil/stage1_flavor.py.
+"""
 
 import os, copy, urllib.request
 
@@ -41,6 +60,12 @@ model_dir = '/eos/experiment/fcc/ee/jet_flavour_tagging/winter2023/wc_pt_7classe
 # model_dir     = "/eos/experiment/fcc/ee/jet_flavour_tagging/winter2023/wc_pt_13_01_2022/"
 
 def get_file_path(url, filename):
+    """Return a local path to the flavour-tagger weight file, downloading if needed.
+
+    Prefers the pre-staged ``filename`` (e.g. on EOS) and returns its absolute
+    path if present. Otherwise it downloads ``url`` into the current working
+    directory and returns that local basename.
+    """
     if os.path.exists(filename):
         return os.path.abspath(filename)
     urllib.request.urlretrieve(url, os.path.basename(url))
@@ -126,8 +151,26 @@ int gen_q_pdg(const ROOT::VecOps::RVec<edm4hep::MCParticleData>& P, int idx) {
 """)
 
 class RDFanalysis():
+    """FCCAnalyses stage-1 analysis hooks (the framework calls these by name).
+
+    ``analysers`` builds the RDataFrame graph and ``output`` returns the branch
+    list to persist. Both are plain functions (no ``self``), invoked as
+    ``RDFanalysis.analysers(df)`` / ``RDFanalysis.output()``.
+    """
 
     def analysers(df):
+        """Build and return the stage-1 RDataFrame graph for the whizard FCNC samples.
+
+        Same selection and derivation chain as
+        ``analysis_stage1_batch.RDFanalysis.analysers`` (muon
+        selection/isolation, muon removal, exclusive 2-jet clustering +
+        flavour tagging, dijet Higgs candidate, Z resonance/recoil, gen tags and
+        gen b/s kinematics, total/partial reconstructed mass-energy, MET), but
+        adapted to the newer podio relation naming and building MET via
+        ``ZHfunctions::missingEnergy`` instead of reading a stored collection.
+
+        Returns the extended dataframe (Z window cuts left commented out).
+        """
 
         df = df.Alias("Lepton0",             "Muon_objIdx.index")
         df = df.Alias("MCRecoAssociations0", "_MCRecoAssociations_rec.index")
@@ -344,6 +387,15 @@ class RDFanalysis():
         return df
 
     def output():
+        """Return the list of branch names to write to the stage-1 ntuple.
+
+        Matches ``analysis_stage1_batch.RDFanalysis.output`` (MET, total/partial
+        reconstructed mass-energy, leptonic Z and recoil, dijet Higgs candidate,
+        per-jet kinematics and flavour-tag scores, ``cosTheta_miss``, gen
+        ``is_Hbs`` tag and gen b/s quark kinematics) plus the tagger's own
+        branches from ``jetFlavourHelper.outputBranches()`` — so this production
+        can be merged with the central-sample one.
+        """
         branchList = [
             #MET
             "met_p", "met_pt", "met_theta", "met_phi",

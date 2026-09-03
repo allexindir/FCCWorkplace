@@ -1,3 +1,16 @@
+"""FCCAnalyses plotting configuration for the *post-BDT* (trained) histograms.
+
+Same role as ``analysis_stage1_plots.py`` but for the analysis samples that have
+already been augmented with the multiclass BDT scores by
+``stage1_include_bdt_batch_samples.py``. In addition to the kinematic and
+flavour-tag variables it plots the raw per-class BDT outputs
+(``BDTscore_class0..7``) and the renormalized rare-decay probabilities
+(``norm_prob0..5``).
+
+Declarative config only (no functions). ``plots`` currently enables the H->bs
+signal against the SM background stack; the commented entries make it easy to
+switch on the other rare/diagonal Higgs decays.
+"""
 import ROOT
 
 global parameters

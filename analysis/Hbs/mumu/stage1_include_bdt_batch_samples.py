@@ -1,3 +1,26 @@
+"""Stage-1 producer that re-runs the full chain and appends the multiclass BDT scores.
+
+This is the "analysis sample" production for the central winter2023/IDEA samples
+(inclusive ZH, diagonal Higgs decays, SM backgrounds). It repeats the same
+reconstruction as ``analysis_stage1_batch.py`` (muons, exclusive 2-jet
+clustering + ParticleNet tagging, Z/recoil, dijet Higgs candidate, MET, gen
+tags) and then, in the same pass, evaluates the trained multiclass XGBoost model
+and writes its outputs alongside the kinematics into
+``outputDirEos/BDT_analysis_samples``.
+
+The trained model is loaded as a TMVA ``RBDT`` from ``BDT/xgb_bdt.root`` and
+wrapped in a ``TMVA::Experimental::Compute`` functor (``computeModel1``) taking
+``len(train_vars)`` inputs. For each event it defines the eight raw class scores
+``BDTscore_class0..7`` and six renormalized rare-decay probabilities
+``norm_prob0..5`` (each rare class divided by ``1 - sum(other rare classes)``).
+A large block of muon-momentum-scale systematic variations is present but
+commented out.
+
+The output of this stage feeds ``analysis_stage1_trained_final_analysis_samples.py``
+(histograms) and the Combine datacards in ``combine/``. The module top level also
+prepends the script directory to ``sys.path`` so ``userConfig`` imports when the
+framework runs the file from elsewhere.
+"""
 import os
 import sys
 
@@ -65,6 +88,12 @@ model_dir = '/eos/experiment/fcc/ee/jet_flavour_tagging/winter2023/wc_pt_7classe
 # model_dir     = "/eos/experiment/fcc/ee/jet_flavour_tagging/winter2023/wc_pt_13_01_2022/"
 
 def get_file_path(url, filename):
+    """Return a local path to the flavour-tagger weight file, downloading if needed.
+
+    Prefers the pre-staged ``filename`` (e.g. on EOS) and returns its absolute
+    path if present. Otherwise it downloads ``url`` into the current working
+    directory and returns that local basename.
+    """
     if os.path.exists(filename):
         return os.path.abspath(filename)
     urllib.request.urlretrieve(url, os.path.basename(url))
@@ -150,8 +179,25 @@ int gen_q_pdg(const ROOT::VecOps::RVec<edm4hep::MCParticleData>& P, int idx) {
 """)
 
 class RDFanalysis():
+    """FCCAnalyses stage-1 analysis hooks (the framework calls these by name).
+
+    ``analysers`` builds the RDataFrame graph — reconstruction plus multiclass
+    BDT evaluation — and ``output`` returns the branch list to persist. Both are
+    plain functions (no ``self``).
+    """
 
     def analysers(df):
+        """Build the stage-1 graph and append the multiclass BDT outputs.
+
+        Runs the same reconstruction chain as
+        ``analysis_stage1_batch.RDFanalysis.analysers`` (old podio naming) and
+        then evaluates the trained model via the ``computeModel1`` RBDT functor:
+        defines ``BDTscore_class0..7`` from its output vector and the six
+        renormalized rare-decay probabilities ``norm_prob0..5``. The muon-scale
+        systematic variations are kept commented out at the end.
+
+        Returns the extended dataframe.
+        """
 
         df = df.Alias("Lepton0",            "Muon#0.index")
         df = df.Alias("MCRecoAssociations0", "MCRecoAssociations#0.index")
@@ -546,6 +592,13 @@ class RDFanalysis():
     #Mandatory: output function, please make sure you return the branchlist as a python list
 
     def output():
+        """Return the branch list for the BDT-augmented ntuple.
+
+        The reconstruction/gen branches (as in ``analysis_stage1_batch``) plus
+        the multiclass BDT outputs: raw scores ``BDTscore_class0..7`` and
+        renormalized rare-decay probabilities ``norm_prob0..5``, followed by the
+        flavour-tagger's own branches from ``jetFlavourHelper.outputBranches()``.
+        """
         branchList = [
             #MET
             "met_p", "met_pt", "met_theta", "met_phi",

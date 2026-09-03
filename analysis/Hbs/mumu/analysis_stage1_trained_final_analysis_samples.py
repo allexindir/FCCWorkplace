@@ -1,3 +1,16 @@
+"""FCCAnalyses final-selection / histmaker configuration for the *post-BDT* ntuples.
+
+Same role as ``analysis_stage1_inputs.py`` but for the BDT-augmented analysis
+samples: it reads the ntuples in ``BDT_analysis_samples`` (produced by
+``stage1_include_bdt_batch_samples.py``), applies the selections in ``cutList``,
+and writes the histogram files consumed by
+``analysis_stage1_trained_plot_analysis_samples.py``.
+
+The ``processList`` here covers the full set of rare/FCNC signals, diagonal
+Higgs decays and SM backgrounds, and ``histoList`` additionally books the
+multiclass BDT outputs (``BDTscore_class0..7``) and renormalized probabilities
+(``norm_prob0..5``). Declarative config only (no functions).
+"""
 import numpy as np
 
 #python examples/FCCee/higgs/mH-recoil/mumu/finalSel.py

@@ -1,8 +1,31 @@
+"""Central configuration for the Z(mumu)H, H->bs (and other rare/FCNC decays) analysis.
+
+This module is imported by nearly every script in the pipeline (BDT input
+preparation, training, evaluation, and the BDT-augmented stage-1 producers).
+It defines, in one place:
+
+- ``loc``: a namespace of filesystem paths (input ntuples, pickles, trained
+  model, plots, etc.) all rooted at ``repo``.
+- ``train_vars``: the ordered list of BDT input features. The order matters:
+  evaluation code maps XGBoost feature indices (``f0``, ``f1``, ...) back to
+  names via this list, and the TMVA ``RBDT`` inference expects inputs in this
+  exact order.
+- ``latex_mapping``: feature name -> LaTeX label, used for axis/legend text in
+  the evaluation plots.
+- ``final_states`` / ``mode_names``: the leptonic final state ("mumu") and the
+  mapping from short process keys (e.g. ``"mumuH_Hbs"``) to the on-disk sample
+  directory names (e.g. ``"wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240"``).
+
+Note: ``mumuH_Hbs`` and ``mumuH_Hother`` (SM Higgs decays) can share the same
+ROOT files; the signal/background split is made at training time from the
+gen-level ``is_Hbs`` branch and/or the sample name, not from the file itself.
+"""
 import os
 
 repo = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu"
 
-class loc: pass
+class loc:
+    """Namespace holding the analysis filesystem paths (set as class attributes below)."""
 loc.ROOT        = repo + '/'
 loc.OUT         = loc.ROOT + 'output_trained/'
 loc.DATA        = loc.ROOT + 'data'

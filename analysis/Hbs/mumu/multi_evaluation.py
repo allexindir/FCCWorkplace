@@ -1,3 +1,13 @@
+"""Evaluate the trained *multiclass* BDT and produce its performance/diagnostic plots.
+
+Multiclass counterpart of ``evaluation.py``. Loads the preprocessed table and the
+joblib model from ``train_multi.py``, scores every event to obtain the eight
+class probabilities ``BDTscore_class0..7`` (with ``BDTscore`` aliased to class 0,
+the H->bs signal) and the argmax ``predicted_label``, then writes figures to
+``loc.PLOTS``: multiclass log-loss and error curves, per-class score overlays
+(overtraining check), feature importance, efficiency vs class-0 probability, and
+a normalized 8x8 confusion matrix. Run: ``python multi_evaluation.py``.
+"""
 import argparse
 import numbers
 from re import I
@@ -30,12 +40,14 @@ rc('text', usetex=True)
 
 
 def load_data():
+    """Load and return the preprocessed training/validation table (``<pkl>/preprocessed.pkl``)."""
     path = f"{loc.PKL}"
     df = pd.read_pickle(f"{path}/preprocessed.pkl")
     return df
 
 
 def print_input_summary(df, modes):
+    """Print the train/validation row count for each process in ``modes``."""
     print(f"__________________________________________________________")
     print(f"Input number of events:")
     for cur_mode in modes:
@@ -45,11 +57,17 @@ def print_input_summary(df, modes):
 
 
 def load_trained_model(loc):
+    """Load and return the trained multiclass BDT from ``loc.BDT/xgb_bdt.joblib``."""
     print(f"--->Loading BDT model {loc.BDT}/xgb_bdt.joblib")
     bdt = joblib.load(f"{loc.BDT}/xgb_bdt.joblib")
     return bdt
 
 def evaluate_bdt_model(df, bdt, vars_list):
+    """Add per-class probabilities and the predicted label to ``df`` and return it.
+
+    Fills ``BDTscore_class0..7`` from ``predict_proba``, aliases ``BDTscore`` to
+    class 0 (the H->bs signal), and stores the argmax class in ``predicted_label``.
+    """
     X = df[vars_list]
     print("--->Evaluating multiclass BDT model")
 
@@ -72,6 +90,11 @@ def evaluate_bdt_model(df, bdt, vars_list):
     return df
 
 def get_performance_metrics(bdt):
+    """Return ``(results, epochs, x_axis, best_iteration)`` from the multiclass training history.
+
+    Uses the ``mlogloss`` history length for the epoch count and falls back to
+    that count when the model exposes no ``best_iteration``.
+    """
     print("------>Retrieving performance metrics")
     results = bdt.evals_result()
 
@@ -86,7 +109,15 @@ def get_performance_metrics(bdt):
     return results, epochs, x_axis, best_iteration
 
 
-def plot_metrics(df,bdt,vars_list,results, epochs, x_axis, best_iteration,mode_names,latex_mappingf,final_states):    
+def plot_metrics(df,bdt,vars_list,results, epochs, x_axis, best_iteration,mode_names,latex_mappingf,final_states):
+    """Create the plot directory and render the multiclass evaluation figures.
+
+    Picks the final-state legend label from ``final_states``, then draws the
+    log-loss and classification-error curves, the per-class score overlays,
+    feature importance, efficiency vs class-0 probability, and the confusion
+    matrix. (ROC/AUC/significance helpers exist but are disabled for the
+    multiclass case.)
+    """
     if final_states == "mumu":
       label = r"$Z(\mu^+\mu^-)H$"
     elif final_states == "ee":
@@ -107,6 +138,7 @@ def plot_metrics(df,bdt,vars_list,results, epochs, x_axis, best_iteration,mode_n
 
 
 def plot_log_loss(results, x_axis, best_iteration,label):
+    """Plot training vs validation multiclass log-loss (``mlogloss``) over boosting rounds."""
     print("------>Plotting log loss")
     fig, ax = plt.subplots()
     ax.plot(x_axis, results["validation_0"]["mlogloss"], label="Training")
@@ -124,6 +156,7 @@ def plot_log_loss(results, x_axis, best_iteration,label):
 
 
 def plot_classification_error(results, x_axis, best_iteration, label):
+    """Plot training vs validation multiclass error (``merror``) over boosting rounds."""
     print("------>Plotting classification error")
     fig, ax = plt.subplots()
     ax.plot(x_axis, results['validation_0']['merror'], label='Training')
@@ -141,6 +174,7 @@ def plot_classification_error(results, x_axis, best_iteration, label):
 
 
 def plot_auc(results, x_axis, best_iteration, label):
+    """Plot training vs validation AUC over boosting rounds (unused in the multiclass flow)."""
     print("------>Plotting AUC")
     fig, ax = plt.subplots()
     ax.plot(x_axis, results['validation_0']['auc'], label='Training')
@@ -158,6 +192,7 @@ def plot_auc(results, x_axis, best_iteration, label):
 
 
 def plot_roc(df,label):
+    """Plot the (class-0-vs-rest) ROC curve for train and validation samples (unused in the multiclass flow)."""
     # plot ROC 1
     print("------>Plotting ROC")
     fig, axes = plt.subplots(1, 1, figsize=(5,5))
@@ -179,6 +214,12 @@ def plot_roc(df,label):
     fig.savefig(f"{loc.PLOTS}/ROC1.eps")
 
 def plot_bdt_score(df, label):
+    """Overlay each class's score distribution split by truth label (per-class overtraining check).
+
+    Produces one figure per ``BDTscore_class{i}``, with a training (solid) and
+    validation (dashed) histogram for every truth class, so leakage/overtraining
+    can be spotted class by class.
+    """
     # One score and color for each class
     scores = [f"BDTscore_class{i}" for i in range(8)]
     colors = ['red', 'blue', 'green', 'purple', 'orange', 'brown', 'magenta', 'cyan']
@@ -242,6 +283,7 @@ def plot_bdt_score(df, label):
 
 
 def plot_importance(bdt, vars_list, latex_mapping,label):
+    """Plot the BDT feature-importance (weight F-score) ranking with LaTeX feature labels."""
     print("------>Plotting feature importance")
     print("------>Plotting inportance")
     fig, ax = plt.subplots(figsize=(12, 10))
@@ -273,6 +315,7 @@ def plot_importance(bdt, vars_list, latex_mapping,label):
     plt.close()
 
 def plot_significance_scan(df,label):
+    """Scan the class-0 score and plot S/sqrt(S+B) significance (unused in the multiclass flow)."""
     print("------>Plotting Significance scan")
     #compute the significance
     df_Z = ut.Significance(df[(df['isSignal'] == 1) & (df['valid'] == True)], df[(df['isSignal'] == 0) & (df['valid'] == True)], score_column = 'BDTscore', func=ut.Z, nbins=100)
@@ -296,7 +339,7 @@ def plot_significance_scan(df,label):
 
 
 def plot_efficiency(df,mode_names,label):
-
+    """Plot the validation-sample efficiency vs class-0 probability cut, one curve per process."""
     #Plot efficiency as a function of BDT cut in each sample
     print("------>Plotting Efficiency")
     cut_vals = np.linspace(0,1,101)
@@ -335,6 +378,7 @@ def plot_efficiency(df,mode_names,label):
     plt.close()
 
 def plot_confusion_matrix(df, label):
+    """Plot the truth-normalized 8x8 confusion matrix (true vs predicted label) on validation events."""
     print("------>Plotting confusion matrix")
 
     df_valid = df[df["valid"] == True]
@@ -370,6 +414,7 @@ def plot_confusion_matrix(df, label):
     plt.close()
 
 def main():
+    """Load the data and multiclass model, score events, and render all evaluation plots."""
     # modes = ["mumuH_Hbs", "mumuH","ZZ","WWmumu","Zll","egamma","gammae","gaga_mumu"]
     df = load_data()
     print_input_summary(df, mode_names)
