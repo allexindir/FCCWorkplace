@@ -25,7 +25,7 @@ outputDirEos = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/batch_5"
 eosType     = "eosuser"
 nCPUS       = 4
 batchQueue  = "longlunch"
-compGroup   = "group_u_FCC.local_gen"
+compGroup   = "group_usfcc.asmith4"
 runBatch = True
 
 outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/temp_files"
