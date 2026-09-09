@@ -27,7 +27,7 @@ from userConfig import loc, train_vars, mode_names
 import utils as ut
 
 rc('font', **{'family': 'serif', 'serif': ['Roman']})
-rc('text', usetex=True)
+rc('text', usetex=False)
 
 def run():
 

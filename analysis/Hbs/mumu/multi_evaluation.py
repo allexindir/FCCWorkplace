@@ -26,7 +26,7 @@ from userConfig import loc, train_vars, mode_names, latex_mapping, final_states
 import utils as ut
 
 rc('font', **{'family': 'serif', 'serif': ['Roman']})
-rc('text', usetex=True)
+rc('text', usetex=False)
 
 
 def load_data():
@@ -88,7 +88,7 @@ def get_performance_metrics(bdt):
 
 def plot_metrics(df,bdt,vars_list,results, epochs, x_axis, best_iteration,mode_names,latex_mappingf,final_states):    
     if final_states == "mumu":
-      label = r"$Z(\mu^+\mu^-)H$"
+      label = r"$Z(\mu^+\mu^-)H$" 
     elif final_states == "ee":
       label = r"$Z(e^+e^-)H$"
     else:
@@ -115,7 +115,13 @@ def plot_log_loss(results, x_axis, best_iteration,label):
     ax.legend()
     plt.xlabel("Number of trees")
     plt.ylabel('Log Loss')
-    ax.set_title(r'$\textbf{\textit{FCC-ee}}$ $\textbf{\textit{Simulation}}$', fontsize=16, loc='left')
+    ax.set_title(
+        'FCC-ee Simulation', 
+        fontsize=16, 
+        loc='left', 
+        fontweight='bold', 
+        fontstyle='italic'
+    )
     ax.set_title(label, fontsize=16, loc='right')
     plt.savefig(f"{loc.PLOTS}/log_loss.png")
     plt.savefig(f"{loc.PLOTS}/log_loss.pdf")
@@ -132,7 +138,13 @@ def plot_classification_error(results, x_axis, best_iteration, label):
     ax.legend()
     plt.xlabel('Number of trees')
     plt.ylabel('Classification Error')
-    ax.set_title(r'$\textbf{\textit{FCC-ee}}$ $\textbf{\textit{Simulation}}$', fontsize=16, loc='left')
+    ax.set_title(
+        'FCC-ee simulation', 
+        fontsize=16, 
+        loc='left', 
+        fontweight='bold', 
+        fontstyle='italic'
+    )
     ax.set_title(label, fontsize=16, loc='right')
     plt.savefig(f"{loc.PLOTS}/classification_error.png")
     plt.savefig(f"{loc.PLOTS}/classification_error.pdf")
@@ -149,7 +161,13 @@ def plot_auc(results, x_axis, best_iteration, label):
     ax.legend()
     plt.xlabel('Number of trees')
     plt.ylabel('AUC')
-    ax.set_title(r'$\textbf{\textit{FCC-ee}}$ $\textbf{\textit{Simulation}}$', fontsize=16, loc='left')
+    ax.set_title(
+        'FCC-ee simulation', 
+        fontsize=16, 
+        loc='left', 
+        fontweight='bold', 
+        fontstyle='italic'
+    )
     ax.set_title(label, fontsize=16, loc='right')
     plt.savefig(f"{loc.PLOTS}/auc.png")
     plt.savefig(f"{loc.PLOTS}/auc.pdf")
@@ -171,7 +189,13 @@ def plot_roc(df,label):
     ut.plot_roc_curve(df[df['valid']==False], "BDTscore", ax=ax, color="#ff7f02", tpr_threshold=eps,linestyle='--', label="Training Sample")
     plt.plot([eps, 1], [eps, 1], color='navy', lw=2, linestyle='--')
     ax.legend()
-    ax.set_title(r'$\textbf{\textit{FCC-ee}}$ $\textbf{\textit{Simulation}}$', fontsize=16, loc='left')
+    ax.set_title(
+        'FCC-ee simulation', 
+        fontsize=16, 
+        loc='left', 
+        fontweight='bold', 
+        fontstyle='italic'
+    )
     ax.set_title(label, fontsize=16, loc='right')
     print(f"Saving ROC plot to {loc.PLOTS}/ROC1.pdf")
     fig.savefig(f"{loc.PLOTS}/ROC1.png")
@@ -221,7 +245,13 @@ def plot_bdt_score(df, label):
         plt.yscale('log')
         ax.legend(loc="upper right", fontsize="small", frameon=False, shadow=False, ncol=2)
         
-        ax.set_title(r'$\textbf{\textit{FCC-ee}}$ $\textbf{\textit{Simulation}}$', fontsize=16, loc='left')
+        ax.set_title(
+            'FCC-ee simulation', 
+            fontsize=16, 
+            loc='left', 
+            fontweight='bold', 
+            fontstyle='italic'
+        )
         ax.set_title(label, fontsize=18, loc='right')
 
         ax.set_xlabel(f"Class {labels[j]} Probability", fontsize=14, loc='right', weight='bold')  
@@ -264,7 +294,13 @@ def plot_importance(bdt, vars_list, latex_mapping,label):
     importance_df = pd.DataFrame({'Variable': sorted_vars_latex, 'Importance': sorted_values})
     importance_df.plot(kind='barh', x='Variable', y='Importance', legend=None, ax=ax)
     ax.set_xlabel('F-score')
-    ax.set_title(r'$\textbf{\textit{FCC-ee}}$ $\textbf{\textit{simulation}}$', fontsize=16, loc='left')
+    ax.set_title(
+        'FCC-ee simulation', 
+        fontsize=16, 
+        loc='left', 
+        fontweight='bold', 
+        fontstyle='italic'
+    )
     ax.set_title(label, fontsize=16, loc='right')
     print(f"------>Saved {loc.PLOTS}/Importance.pdf")
     plt.savefig(f"{loc.PLOTS}/importance.png")
@@ -286,7 +322,13 @@ def plot_significance_scan(df,label):
     txt1 = Rectangle((0, 0), 1, 1, fc="w", fill=False, edgecolor='none', linewidth=0)
     txt2 = Rectangle((0, 0), 1, 1, fc="w", fill=False, edgecolor='none', linewidth=0)
     plt.legend([txt1, txt2], ('max-Z: {:.2f} cut threshold: [{:.2f}]'.format(df_Z.loc[max_index,"Z"],max_index), "$Z = S/\\sqrt{S+B}$"))
-    ax.set_title(r'$\textbf{\textit{FCC-ee}}$ $\textbf{\textit{Simulation}}$', fontsize=16, loc='left')
+    ax.set_title(
+        'FCC-ee simulation', 
+        fontsize=16, 
+        loc='left', 
+        fontweight='bold', 
+        fontstyle='italic'
+    )
     ax.set_title(label, fontsize=16, loc='right')
     print("------>Plotting significance scan")
     plt.savefig(f"{loc.PLOTS}/significance_scan.png")
@@ -325,7 +367,13 @@ def plot_efficiency(df,mode_names,label):
     plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left", borderaxespad=0.0)
     #plt.legend(fontsize=20, loc="best")
     plt.grid(alpha=0.4,which="both")
-    ax.set_title(r'$\textbf{\textit{FCC-ee}}$ $\textbf{\textit{Simulation}}$', fontsize=16, loc='left')
+    ax.set_title(
+        'FCC-ee simulation', 
+        fontsize=16, 
+        loc='left', 
+        fontweight='bold', 
+        fontstyle='italic'
+    )
     ax.set_title(label, fontsize=16, loc='right')
     plt.tight_layout()
     print("------>Saving Efficiency Plots")
@@ -360,7 +408,13 @@ def plot_confusion_matrix(df, label):
     disp.plot(ax=ax, cmap="Blues", values_format=".3f", colorbar=True)
     plt.xticks(rotation=45, ha="right")
 
-    ax.set_title(r"$\textbf{\textit{FCC-ee}}$ $\textbf{\textit{Simulation}}$", fontsize=16, loc="left")
+    ax.set_title(
+        'FCC-ee simulation', 
+        fontsize=16, 
+        loc='left', 
+        fontweight='bold', 
+        fontstyle='italic'
+    )
     ax.set_title(label, fontsize=16, loc="right")
 
     plt.tight_layout()
