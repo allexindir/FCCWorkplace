@@ -66,6 +66,14 @@ section below.
 ```bash
 fccanalysis run analysis_stage1_batch.py
 ```
+IMPORTANT NOTE: when running on BNL SDCC memory limits are too low and must be set higher, which requires the following lines to be added to the condor config: 
+
+```python
+request_memory = get_element(rdf_module, "batchMemory")
+    if request_memory:
+        cfg += 'RequestMemory    = %s\n' % request_memory
+```
+
 Muon selection (p > 20 GeV, isolated, opposite charge), 2-jet exclusive clustering with
 muons removed, 7-flavour tagging, Z/recoil/MET/d_merge observables → flat ntuples in
 `<repo>/batch_5/<sample>/chunk*.root`. No Z-window cuts are applied at this stage
