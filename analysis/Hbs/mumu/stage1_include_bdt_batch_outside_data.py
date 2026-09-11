@@ -26,12 +26,14 @@ processList = {
     }
     
 #prodTag     = "FCCee/winter2023/IDEA/"
-inputDir = '/eos/experiment/fcc/ee/analyses_storage/Higgs_and_TOP/HiggsFCNC/'
+# inputDir = '/eos/experiment/fcc/ee/analyses_storage/Higgs_and_TOP/HiggsFCNC/'
+inputDir = '/gpfs/mnt/gpfs01/usfcc/MAPS_storage/generation/DelphesEvents/winter2023/IDEA/'
 outputDirEos = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples"
 eosType     = "eosuser"
-nCPUS       = 4
+nCPUS       = 3
+batchMemory = 5000
 batchQueue  = "longlunch"
-compGroup   = "group_u_FCC.local_gen"
+compGroup   = "group_usfcc.asmith4"
 runBatch = True
 
 outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/temp_files_for_bdt_batch"

@@ -13,7 +13,7 @@ import os, copy, urllib.request
 
 processList = {
     #background
-    'wzp6_ee_mumuH_ecm240':           {'chunks': 20},# 'fraction':0.01},
+    'wzp6_ee_mumuH_ecm240':           {'chunks': 20}, #'fraction':0.01},
 
     'p8_ee_WW_ecm240':                {'chunks': 80},#, 'fraction':0.10},
     'wzp6_egamma_eZ_Zmumu_ecm240':    {'chunks': 20},#, 'fraction':0.10},
@@ -38,9 +38,10 @@ processList = {
 prodTag     = "FCCee/winter2023/IDEA/"
 outputDirEos= "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples"
 eosType = "eosuser"
-nCPUS       = 4
+nCPUS       = 3
+batchMemory = 5000
 batchQueue = 'workday' #"longlunch"
-compGroup = "group_u_FCC.local_gen"
+compGroup = "group_usfcc.asmith4"
 runBatch    = True
 
 outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/temp_files_for_bdt_batch"
