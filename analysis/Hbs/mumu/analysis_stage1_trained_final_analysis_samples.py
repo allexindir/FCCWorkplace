@@ -3,7 +3,7 @@ import numpy as np
 #python examples/FCCee/higgs/mH-recoil/mumu/finalSel.py
 #Input directory where the files produced at the pre-selection level are
 # inputDir = "/afs/cern.ch/user/d/dduan/private/FCCWorkplace/analysis/Hbs/mumu/ROOT_Files"
-inputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples"
+inputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/temp_files_for_bdt_batch"
 
 #Output directory for the plotting script
 outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Histo_Files"
@@ -76,6 +76,7 @@ cutList = {
             #Without Cuts
             "No_Cuts":"1",
             ####baseline without costhetamiss 
+            # name is misleading no costheta_miss
             "sel_Baseline_no_costhetamiss":"zll_m  > 86 && zll_m  < 96  && zll_recoil_m > 120 &&zll_recoil_m  <140 && zll_p  > 20 && zll_p  <70",
             }
 
