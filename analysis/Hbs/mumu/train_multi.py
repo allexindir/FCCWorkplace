@@ -3,6 +3,7 @@ import sys
 import argparse
 import json
 import glob
+import random
 
 import numpy as np
 import pandas as pd
@@ -29,7 +30,11 @@ import utils as ut
 rc('font', **{'family': 'serif', 'serif': ['Roman']})
 rc('text', usetex=False)
 
-def run():
+def run(seed, n_jobs):
+
+    # setting random variables as a safety:
+    random.seed(seed)
+    np.random.seed(seed)
 
     modes = ["mumuH_Hbs", "mumuH_Hbd", "mumuH_Hcu", "mumuH_Hsd",
             "mumuH_Hbb", "mumuH_Hss", "mumuH_Hcc", "mumuH_Hdd", "mumuH_Huu", "mumuH_Hgg",
@@ -51,7 +56,7 @@ def run():
     X_train, y_train, X_valid, y_valid = split_data(df, vars_list)
 
     #parameters for training
-    config_dict = get_config_dict()
+    config_dict = get_config_dict(seed, n_jobs)
     early_stopping_round = 25
 
     bdt = train_model(X_train, y_train, X_valid, y_valid, config_dict, early_stopping_round)
@@ -75,7 +80,7 @@ def split_data(df, vars_list):
 
     return X_train, y_train, X_valid, y_valid
 
-def get_config_dict():
+def get_config_dict(seed, n_jobs):
     return {
         "n_estimators": 350,
         "learning_rate": 0.20,
@@ -90,7 +95,9 @@ def get_config_dict():
         "objective": "multi:softprob",
         "num_class": 8,
         "eval_metric": ["mlogloss", "merror"],
-        "random_state": 7,
+        "random_state": seed,
+        "tree_method": "hist",
+        "n_jobs": n_jobs
     }
 
 def train_model(X_train, y_train, X_valid, y_valid, config_dict, early_stopping_round):
@@ -120,6 +127,12 @@ def save_model(bdt, vars_list, output_path):
     joblib.dump(bdt, f"{output_path}/xgb_bdt.joblib")
 
 if __name__ == "__main__":
-    run()   
-
+    parser = argparse.ArgumentParser(description="Train the multiclass XGBoost classifier")
+    parser.add_argument("--seed", action="store", dest="seed", type=int, default=7,
+        help = "Random seed for XGBoost and Numpy/Python RNGs (default: 7)")
+    parser.add_argument("--n-jobs", action="store", dest="n_jobs", type=int, default=1,
+        help = "XGBoost thread count, this must be constant for bit-exact reproducability. "
+               "Setting n_jobs = 1 guarantees correctness across machines. Raise if needed for speed.") 
+    args = parser.parse_args()
+    run(seed=args.seed, n_jobs=args.n_jobs)
 

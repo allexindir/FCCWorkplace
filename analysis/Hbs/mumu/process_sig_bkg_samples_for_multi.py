@@ -14,7 +14,7 @@ deffccdicts = "/cvmfs/fcc.cern.ch/FCCDicts"
 
 def get_data_paths(cur_mode, data_path):
     path = f"{data_path}/{mode_names[cur_mode]}"
-    return glob.glob(f"{path}/*.root")
+    return sorted(glob.glob(f"{path}/*.root")) # without "sorted" file order is os dependent
 
 def calculate_event_counts_and_efficiencies(cur_mode, files, vars_list):
     if not files:
@@ -107,9 +107,9 @@ def calculate_multiclass_BDT_input_numbers(mode_names, df, eff, xsec, class_mapp
             
     return N_BDT_inputs
 
-def split_data_and_update_dataframe(df, N_BDT_inputs, xsec, N_events, cur_mode):
-    df = df.sample(n=N_BDT_inputs[cur_mode], random_state=1)
-    df0, df1 = train_test_split(df, test_size=0.3, random_state=7)
+def split_data_and_update_dataframe(df, N_BDT_inputs, xsec, N_events, cur_mode, seed):
+    df = df.sample(n=N_BDT_inputs[cur_mode], random_state=seed)
+    df0, df1 = train_test_split(df, test_size=0.3, random_state=seed)
     df.loc[df0.index, "valid"] = False
     df.loc[df1.index, "valid"] = True
     df.loc[df.index, "norm_weight"] = xsec[cur_mode] / N_events[cur_mode]
@@ -152,7 +152,7 @@ def update_procDict_keys(procDict, mode_names):
     return updated_dict
 
     
-def run(modes, n_folds, stage):
+def run(modes, n_folds, stage, seed):
 
     procFile = "FCCee_procDict_winter2023_IDEA.json"
     proc_dict = get_procDict(procFile)
@@ -268,7 +268,7 @@ def run(modes, n_folds, stage):
 
     print(f"Number of BDT inputs = {N_BDT_inputs}")
     for cur_mode in mode_names:
-        df[cur_mode] = split_data_and_update_dataframe(df[cur_mode], N_BDT_inputs, xsec, N_events, cur_mode)
+        df[cur_mode] = split_data_and_update_dataframe(df[cur_mode], N_BDT_inputs, xsec, N_events, cur_mode, seed)
 
     dfsum = pd.concat([df[cur_mode] for cur_mode in mode_names])
 
@@ -280,5 +280,6 @@ if __name__ == '__main__':
     parser.add_argument("--Mode", action="store", dest="modes", default=["mumuH", "ZZ", "WWmumu", "Zll", "egamma", "gammae", "gaga_mumu"], help="Decay mode")
     parser.add_argument("--Folds", action="store", dest="n_folds", default=2, help="Number of Folds")
     parser.add_argument("--Stage", action="store", dest="stage", default="training", choices=["training", "validation"], help="training or validation")
+    parser.add_argument("--seed", action="store", dest="seed", type=int, default=7, help="Set random seed for the down-smapling and training/validation split (default: 7)")
     args = vars(parser.parse_args())
     run(**args)
