@@ -2,7 +2,13 @@
 # Stage 1: flat ntuple production
 # Modelled on ZH_XSec/FinalReport/S240/mumu and FCCAnalyses/examples/FCCee/higgs/mH-recoil/stage1_flavor.py
 
-import os, copy, urllib.request
+import os, sys, copy, urllib.request
+
+# Locate the FCCWorkplace checkout so the paths below follow the repo, not a
+# particular user area (override with FCCWORKPLACE_ROOT).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from repo_paths import analysis_path
+
 
 includePaths = ["functions.h"]
 
@@ -21,7 +27,7 @@ processList = {
 #prodTag     = "FCCee/winter2023/IDEA/"
 # inputDir = '/eos/experiment/fcc/ee/analyses_storage/Higgs_and_TOP/HiggsFCNC/'
 inputDir = '/gpfs/mnt/gpfs01/usfcc/MAPS_storage/generation/DelphesEvents/winter2023/IDEA/'
-outputDirEos = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/batch_5"
+outputDirEos = analysis_path("stage1_ntuples")
 eosType     = "eosuser"
 nCPUS       = 3
 batchMemory = 5000
@@ -29,8 +35,7 @@ batchQueue  = "longlunch"
 compGroup   = "group_usfcc.asmith4"
 runBatch = True
 
-outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/temp_files"
-#outputDir= "/afs/cern.ch/user/d/dduan/private/FCCWorkplace/analysis/Hbs/mumu/ROOT_Files"
+outputDir = analysis_path("root_workspaces_for_stage1_batch")
 
 ## ParticleNet flavor tagger model (winter2023), trained on 9M jets
 model_name = 'fccee_flavtagging_edm4hep_wc'

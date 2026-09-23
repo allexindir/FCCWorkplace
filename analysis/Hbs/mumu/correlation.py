@@ -2,8 +2,16 @@ import uproot
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+import sys
 
-outdir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/"
+# Locate the FCCWorkplace checkout so the paths below follow the repo, not a
+# particular user area (override with FCCWORKPLACE_ROOT).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from repo_paths import ANALYSIS_DIR, analysis_path
+
+
+outdir = ANALYSIS_DIR
 
 corr_vars = [
     # #MET
@@ -39,7 +47,7 @@ corr_vars = [
 ]
 
 # open the ROOT file, grab the events tree, load as pandas dataframe
-f = uproot.open("/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/batch_5/wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240/chunk_0.root")
+f = uproot.open(analysis_path("stage1_ntuples", "wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240", "chunk_0.root"))
 df_signal = f["events"].arrays(corr_vars, library="pd")
 
 # now just
@@ -68,7 +76,7 @@ plt.tight_layout()
 
 # 5. SAVE THE PLOT (Replace plt.show() with this)
 plt.savefig(
-    f"{outdir}correlation_matrix.png",  # The filename and format (.png, .pdf, .svg)
+    os.path.join(outdir, "correlation_matrix.png"),  # The filename and format (.png, .pdf, .svg)
     dpi=300,  # High resolution for publication-quality clarity
     bbox_inches="tight",  # CRITICAL: Prevents your 37 variable labels from being cut off
 )
