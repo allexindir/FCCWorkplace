@@ -1,27 +1,43 @@
 import os
+import sys
 
-repo = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu"
+# `fccanalysis` loads the stage scripts without putting their directory on
+# sys.path, so make the helper importable however this file was reached.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from repo_paths import ANALYSIS_DIR, REPO_ROOT, analysis_path
+
+# Every path below is derived from the FCCWorkplace checkout this file lives in
+# (override with FCCWORKPLACE_ROOT); nothing is tied to a particular user area.
+repo = ANALYSIS_DIR
 
 class loc: pass
-loc.ROOT        = repo 
-loc.OUT         = loc.ROOT + '/output_trained'
-loc.DATA        = loc.ROOT + '/data'
-loc.CSV         = loc.DATA + '/csv'
-loc.PKL         = loc.DATA + '/pkl'
-loc.PKL_Val     = loc.DATA + '/pkl_val'
-loc.ROOTFILES   = loc.DATA + '/ROOT'
-loc.PLOTS       = loc.DATA + '/plots'
-loc.PLOTS_Val   = loc.OUT  + 'plots_val'
-loc.TEX         = loc.OUT  + 'tex'
-loc.JSON        = loc.OUT  + 'json'
+loc.REPO        = REPO_ROOT
+loc.ROOT        = repo
+loc.OUT         = analysis_path('output_trained')
+loc.DATA        = analysis_path('data')
+loc.CSV         = os.path.join(loc.DATA, 'csv')
+loc.PKL         = os.path.join(loc.DATA, 'pkl')
+loc.PKL_Val     = os.path.join(loc.DATA, 'pkl_val')
+loc.ROOTFILES   = os.path.join(loc.DATA, 'ROOT')
+loc.PLOTS       = os.path.join(loc.DATA, 'plots')
+loc.PLOTS_Val   = os.path.join(loc.OUT,  'plots_val')
+loc.TEX         = os.path.join(loc.OUT,  'tex')
+loc.JSON        = os.path.join(loc.OUT,  'json')
 
 loc.EOS      = repo
-loc.BDT      = loc.EOS + '/BDT'
 loc.PROD     = loc.EOS
-loc.STAGE1   = loc.PROD + '/firstlook'
-loc.TRAIN    = loc.PROD + '/temp_files'
-loc.TRAIN2   = loc.PROD + '/Training_4stage2'
-loc.ANALYSIS = loc.PROD + '/BDT_analysis_samples'
+loc.STAGE1   = analysis_path('firstlook')
+loc.TRAIN2   = analysis_path('Training_4stage2')
+
+# Trained BDT: xgb_bdt.root (TMVA) + xgb_bdt.joblib (step 4).
+loc.BDT      = analysis_path('BDT')
+# Stage-1 ntuples as the batch jobs write them — the outputDir of
+# analysis_stage1_batch.py / analysis_stage1_outsideData.py — read back as the
+# BDT training input by process_sig_bkg_samples_for_{xgb,multi}.py (step 3).
+loc.TRAIN    = analysis_path('root_workspaces_for_stage1_batch')
+# Stage-1 ntuples with the BDT scores attached (outputDirEos of
+# stage1_include_bdt_batch_*.py, step 6) — the input to the final selection.
+loc.ANALYSIS = analysis_path('BDT_analysis_samples')
 
 # BDT input variables
 train_vars = [

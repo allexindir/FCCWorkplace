@@ -1,4 +1,12 @@
 import ROOT
+import os
+import sys
+
+# Locate the FCCWorkplace checkout so the paths below follow the repo, not a
+# particular user area (override with FCCWORKPLACE_ROOT).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from repo_paths import analysis_path
+
 
 global parameters
 intLumi        = 10.8e+06 #in pb-1
@@ -8,11 +16,13 @@ energy         = 240.0
 collider       = 'FCC-ee'
 
 
-inputDir       = '/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Histo_Files/'
+# NB: do_plots concatenates inputDir + "<process>_<sel>_histo.root" without a
+# separator, so the trailing one is required.
+inputDir       = analysis_path("Histo_Files") + os.sep
 yaxis          = ['lin','log']
 stacksig       = ['stack','nostack']
 formats        = ['png','pdf']
-outdir         = '/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Final_Plots'
+outdir         = analysis_path("Final_Plots")
 
 variables = [   #muons
                 "leading_zll_lepton_p",

@@ -44,14 +44,47 @@ do **not** run this analysis on the latest stack.
   `/eos`. No environment to source; the wrapper works from any shell, including the
   `setup_hbs.sh` one. See [documents/COMBINE.md](../../../documents/COMBINE.md).
 
-## Paths to configure
+## Paths
 
-All I/O paths are centralised in [userConfig.py](userConfig.py) via
-`repo = "/eos/user/d/dduan/FCCee/Hbs/mumu"` — change `repo` to your own area.
-The FCCAnalyses stage scripts additionally hardcode their own `outputDir` /
-`outputDirEos` (and `stage1_include_bdt_*.py` hardcodes the BDT model path
-`<repo>/BDT/xgb_bdt.root` inside a `gInterpreter.ProcessLine` block) — grep for
-`/eos/user/d/dduan` and update every script you run.
+There is nothing to configure. Every path *inside* the repository is derived at
+import time from the FCCWorkplace checkout the script itself lives in, so the
+analysis runs from any clone, under any user, without edits.
+
+[repo_paths.py](repo_paths.py) walks up from its own location until it finds the
+repo root — by directory name, or by the `setup.sh` + `analysis/` + `FCCAnalyses/`
+markers if the checkout has been renamed — and exposes `analysis_path(...)` /
+`repo_path(...)`. [userConfig.py](userConfig.py) builds the `loc.*` tree on top of
+it (`loc.REPO`, `loc.ROOT`, `loc.BDT`, `loc.PLOTS`, …), and the FCCAnalyses stage
+scripts set their `inputDir` / `outputDir` / `outputDirEos` — and the BDT model
+path inside the `gInterpreter.ProcessLine` block of `stage1_include_bdt_*.py` —
+the same way.
+
+Export `FCCWORKPLACE_ROOT` to override the search, e.g. when a batch job stages
+the scripts outside the checkout. If neither the search nor the variable resolves,
+the scripts fail loudly at import rather than writing somewhere unexpected.
+
+Directories produced under `analysis/Hbs/mumu/`, in pipeline order:
+
+| Directory | Written by | Holds |
+| --- | --- | --- |
+| `root_workspaces_for_stage1_batch/` | steps 1–2 (`outputDir`) | stage-1 ntuples as the batch jobs write them; `loc.TRAIN`, the BDT training input |
+| `stage1_ntuples/` | steps 1–2 (`outputDirEos`) | the same ntuples after `xrdcp` to their final location |
+| `data/pkl/`, `data/plots/` | steps 3, 5 | training pickle; training/evaluation plots |
+| `BDT/` | step 4 | `xgb_bdt.root` (TMVA) + `xgb_bdt.joblib` |
+| `root_workspaces_for_bdt_batch/` | step 6 (`outputDir`) | stage-1 ntuples + BDT scores, as written |
+| `BDT_analysis_samples/` | step 6 (`outputDirEos`) | the same, after `xrdcp`; `loc.ANALYSIS`, input to the final selection |
+| `Histo_Files/` | step 7 | selected, lumi-scaled histograms |
+| `Final_Plots/` | step 8 | stacked plots |
+| `combine/cards/` | step 9 | datacards + shapes (git-ignored) |
+
+Paths that point *outside* the repository stay absolute on purpose — they describe
+the site, not the checkout:
+
+| Where | What |
+| --- | --- |
+| `/eos/experiment/fcc/ee/jet_flavour_tagging/winter2023/…` | `model_dir`, the flavour-tagger weights (auto-downloads from `fccsw.web.cern.ch` if absent) |
+| `/gpfs/mnt/gpfs01/usfcc/MAPS_storage/…` | `inputDir` of the `*outside*Data*.py` stages — the custom FCNC samples on SDCC; the commented `/eos/…` line above it is the lxplus equivalent |
+| `/cvmfs/fcc.cern.ch/FCCDicts/` | process dictionaries read by the training-input scripts |
 
 Inputs:
 - Official winter2023 samples are resolved from `prodTag = "FCCee/winter2023/IDEA/"`
@@ -83,7 +116,9 @@ request_memory = get_element(rdf_module, "batchMemory")
 
 Muon selection (p > 20 GeV, isolated, opposite charge), 2-jet exclusive clustering with
 muons removed, 7-flavour tagging, Z/recoil/MET/d_merge observables → flat ntuples in
-`<repo>/batch_5/<sample>/chunk*.root`. No Z-window cuts are applied at this stage
+`<repo>/stage1_ntuples/<sample>/chunk*.root` (the batch jobs write them to
+`<repo>/root_workspaces_for_stage1_batch/` first, then `xrdcp` them across). No
+Z-window cuts are applied at this stage
 (they are applied later, at step 7).
 
 **2. Stage 1 ntuples — custom FCNC samples:**
@@ -228,7 +263,7 @@ re-copy the histograms from EOS.
 - `analysis_stage1_batch.py` had `jet1_charge`/`jet2_charge` in the output branch list
   while their `Define`s are commented out (crash at Snapshot). Fixed by commenting the
   branches out too — keep the two lists in sync if jet charge is reinstated.
-- Steps 3–5 need the full `batch_5` stage-1 ntuples; they cannot run without access to
+- Steps 3–5 need the full `stage1_ntuples` stage-1 ntuples; they cannot run without access to
   the producing user's EOS area (or a re-run of steps 1–2 into your own area).
 - `stage1_include_bdt_*.py` load `xgb_bdt.root` at import time — they fail immediately
   (JIT error) if the model path does not exist.

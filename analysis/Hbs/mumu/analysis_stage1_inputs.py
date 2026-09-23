@@ -1,12 +1,19 @@
 import numpy as np
+import os
+import sys
+
+# Locate the FCCWorkplace checkout so the paths below follow the repo, not a
+# particular user area (override with FCCWORKPLACE_ROOT).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from repo_paths import analysis_path
+
 
 #python examples/FCCee/higgs/mH-recoil/mumu/finalSel.py
 #Input directory where the files produced at the pre-selection level are
-# inputDir = "/afs/cern.ch/user/d/dduan/private/FCCWorkplace/analysis/Hbs/mumu/ROOT_Files"
-inputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/initial_batch1"
+inputDir = analysis_path("stage1_ntuples")
 
 #Output directory for the plotting script
-outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Histo_Files"
+outputDir = analysis_path("Histo_Files")
 
 ###Link to the dictonary that contains all the cross section informations etc...
 procDict = "FCCee_procDict_winter2023_IDEA.json"

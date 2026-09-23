@@ -2,9 +2,18 @@ import uproot
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import os
+import sys
 
-f = uproot.open("/afs/cern.ch/user/d/dduan/private/FCCWorkplace/analysis/Hbs/mumu/ROOT_Files/wzp6_ee_mumuH_Hbs_ecm240/chunk0.root")
-outdir = "/afs/cern.ch/user/d/dduan/private/FCCWorkplace/analysis/Hbs/mumu/sb_jet_efficiency_plots/"
+# Locate the FCCWorkplace checkout so the paths below follow the repo, not a
+# particular user area (override with FCCWORKPLACE_ROOT).
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from repo_paths import analysis_path
+
+
+f = uproot.open(analysis_path("stage1_ntuples", "wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240", "chunk_0.root"))
+outdir = analysis_path("sb_jet_efficiency_plots")
+os.makedirs(outdir, exist_ok=True)
 
 branches = ["jet1_btag", "jet1_stag", "jet1_theta", "jet1_phi",
             "jet2_btag", "jet2_stag", "jet2_theta", "jet2_phi",
@@ -98,7 +107,7 @@ ax1.set_ylabel("events")
 ax1.set_title("truth-matched b-tag score distribution")
 
 fig1.tight_layout()
-fig1.savefig(f"{outdir}btag_score_distribution.png")
+fig1.savefig(os.path.join(outdir, "btag_score_distribution.png"))
 plt.close(fig1)
 
 #WP thresholds vs ε_b
@@ -114,7 +123,7 @@ ax2.legend()
 ax2.grid(True)
 
 fig2.tight_layout()
-fig2.savefig(f"{outdir}btag_efficiency_curve.png")
+fig2.savefig(os.path.join(outdir, "btag_efficiency_curve.png"))
 plt.close(fig2)
 
 #s jet plots
@@ -125,7 +134,7 @@ ax3.set_ylabel("events")
 ax3.set_title("truth-matched s-tag score distribution")
 
 fig3.tight_layout()
-fig3.savefig(f"{outdir}stag_score_distribution.png")
+fig3.savefig(os.path.join(outdir, "stag_score_distribution.png"))
 plt.close(fig3)
 
 #WP thresholds vs ε_s
@@ -140,7 +149,7 @@ ax4.legend()
 ax4.grid(True)
 
 fig4.tight_layout()
-fig4.savefig(f"{outdir}stag_efficiency_curve.png")
+fig4.savefig(os.path.join(outdir, "stag_efficiency_curve.png"))
 plt.close(fig4)
 
 #2D btag to stag for each jet
@@ -160,7 +169,7 @@ ax5.set_ylabel("Jet1 s-tag score")
 ax5.set_title("b-tag vs s-tag")
 
 fig5.tight_layout()
-fig5.savefig(f"{outdir}Jet1_btag_stag_2d.png")
+fig5.savefig(os.path.join(outdir, "Jet1_btag_stag_2d.png"))
 plt.close(fig5)
 
 fig6, ax6 = plt.subplots(figsize=(6, 4))
@@ -179,7 +188,7 @@ ax6.set_ylabel("Jet2 s-tag score")
 ax6.set_title("b-tag vs s-tag")
 
 fig6.tight_layout()
-fig6.savefig(f"{outdir}Jet2_btag_stag_2d.png")
+fig6.savefig(os.path.join(outdir, "Jet2_btag_stag_2d.png"))
 plt.close(fig6)
 
 #Joint Efficiency
@@ -199,7 +208,7 @@ ax7.set_title('joint b+s tagging efficiency')
 ax7.legend()
 
 fig7.tight_layout()
-fig7.savefig(f"{outdir}joint_efficiency_2d.png")
+fig7.savefig(os.path.join(outdir, "joint_efficiency_2d.png"))
 plt.close(fig7)
 
 #btag max plots
@@ -210,7 +219,7 @@ ax8.set_ylabel("events")
 ax8.set_title("maximum b-tag score between 2 jets in an event")
 
 fig8.tight_layout()
-fig8.savefig(f"{outdir}max_btag_score_distribution.png")
+fig8.savefig(os.path.join(outdir, "max_btag_score_distribution.png"))
 plt.close(fig8)
 
 #stag other plots
@@ -221,7 +230,7 @@ ax9.set_ylabel("events")
 ax9.set_title("other stag score between 2 jets in an event")
 
 fig9.tight_layout()
-fig9.savefig(f"{outdir}other_stag_score_distribution.png")
+fig9.savefig(os.path.join(outdir, "other_stag_score_distribution.png"))
 plt.close(fig9)
 
 
