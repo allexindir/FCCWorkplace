@@ -121,6 +121,14 @@ muons removed, 7-flavour tagging, Z/recoil/MET/d_merge observables → flat ntup
 Z-window cuts are applied at this stage
 (they are applied later, at step 7).
 
+Batch outputs are checked end to end (FCCAnalyses-winter2023 local patch):
+submission refuses to write into a `<outputDir>/<sample>/` that still holds
+`chunk_*.root` files from an earlier run (move or delete them first), and writes a
+`manifest.json` there listing every expected chunk and its input event count. Each job
+aborts if it reads fewer events than its inputs contain, and only publishes its chunk
+once complete. Step 3 fails unless every sample matches its manifest exactly
+(`--skip-manifest-check` for older outputs).
+
 **2. Stage 1 ntuples — custom FCNC samples:**
 ```bash
 fccanalysis run analysis_stage1_outsideData.py

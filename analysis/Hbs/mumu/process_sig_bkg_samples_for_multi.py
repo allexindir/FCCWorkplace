@@ -16,6 +16,40 @@ def get_data_paths(cur_mode, data_path):
     path = f"{data_path}/{mode_names[cur_mode]}"
     return sorted(glob.glob(f"{path}/*.root")) # without "sorted" file order is os dependent
 
+def check_chunks_against_manifest(cur_mode, files, data_path):
+    """Fail unless the chunks on disk are exactly the ones the batch
+    submission promised (manifest.json, written by FCCAnalyses), each
+    complete. Catches jobs that never finished and leftovers from older runs."""
+    path = f"{data_path}/{mode_names[cur_mode]}"
+    manifest_path = f"{path}/manifest.json"
+    if not os.path.isfile(manifest_path):
+        raise FileNotFoundError(
+            f"No manifest.json for mode '{cur_mode}' in {path}. Re-run the stage-1 "
+            f"submission, or pass --skip-manifest-check for outputs made before manifests existed."
+        )
+    with open(manifest_path) as f:
+        expected = json.load(f)["chunks"]
+
+    found = {os.path.basename(f): f for f in files}
+    problems = []
+    for name in sorted(set(expected) - set(found)):
+        problems.append(f"missing {name}")
+    for name in sorted(set(found) - set(expected)):
+        problems.append(f"unexpected {name} (not in manifest)")
+    for name in sorted(set(expected) & set(found)):
+        with uproot.open(found[name]) as root_file:
+            if "eventsInput" not in root_file:
+                problems.append(f"{name}: no eventsInput (written by an older FCCAnalyses?)")
+                continue
+            n_read = root_file["eventsInput"].value
+        if n_read != expected[name]["input_events"]:
+            problems.append(f"{name}: read {n_read} of {expected[name]['input_events']} input events")
+    if problems:
+        raise RuntimeError(
+            f"Stage-1 output for mode '{cur_mode}' ({path}) is incomplete:\n  "
+            + "\n  ".join(problems)
+        )
+
 def calculate_event_counts_and_efficiencies(cur_mode, files, vars_list):
     if not files:
         raise FileNotFoundError(
@@ -31,6 +65,10 @@ def calculate_event_counts_and_efficiencies(cur_mode, files, vars_list):
         dfs.append(df_file)
 
     df = pd.concat(dfs, ignore_index=True)
+    # Stage 1 runs multithreaded, so the row order inside each chunk changes
+    # from run to run even when the events are identical. df.sample() below
+    # picks rows by position, so put rows in a content-defined order first.
+    df = df.sort_values(by=sorted(df.columns), kind="mergesort", ignore_index=True)
     eff = len(df) / total_events if total_events > 0 else 0
     
     return total_events, df, eff
@@ -152,7 +190,7 @@ def update_procDict_keys(procDict, mode_names):
     return updated_dict
 
     
-def run(modes, n_folds, stage, seed):
+def run(modes, n_folds, stage, seed, skip_manifest_check):
 
     procFile = "FCCee_procDict_winter2023_IDEA.json"
     proc_dict = get_procDict(procFile)
@@ -256,6 +294,10 @@ def run(modes, n_folds, stage, seed):
 
     for cur_mode in mode_names:
         files[cur_mode] = get_data_paths(cur_mode, data_path)
+        if skip_manifest_check:
+            print(f"WARNING: not checking {cur_mode} chunks against manifest.json")
+        else:
+            check_chunks_against_manifest(cur_mode, files[cur_mode], data_path)
         #For each mode, retrieve the number of events, the data for each event, and the percentage of events remaining after the cut
         N_events[cur_mode], df[cur_mode], eff[cur_mode] = calculate_event_counts_and_efficiencies(cur_mode, files[cur_mode], vars_list)
         print(f"Number of events in {cur_mode} = {N_events[cur_mode]}")
@@ -281,5 +323,6 @@ if __name__ == '__main__':
     parser.add_argument("--Folds", action="store", dest="n_folds", default=2, help="Number of Folds")
     parser.add_argument("--Stage", action="store", dest="stage", default="training", choices=["training", "validation"], help="training or validation")
     parser.add_argument("--seed", action="store", dest="seed", type=int, default=7, help="Set random seed for the down-smapling and training/validation split (default: 7)")
+    parser.add_argument("--skip-manifest-check", action="store_true", dest="skip_manifest_check", help="Do not verify stage-1 chunks against the batch manifest.json (only for outputs made before manifests existed)")
     args = vars(parser.parse_args())
     run(**args)
