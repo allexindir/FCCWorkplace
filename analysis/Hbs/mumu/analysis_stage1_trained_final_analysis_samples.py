@@ -15,13 +15,12 @@ inputDir = analysis_path("root_workspaces_for_bdt_batch")
 #Output directory for the plotting script
 outputDir = analysis_path("Histo_Files")
 
-import os
 classifier = os.environ.get("HBS_CLASSIFIER", "BDT")
 if classifier not in ("BDT", "NN"):
     raise ValueError(f"HBS_CLASSIFIER must be BDT or NN, not '{classifier}'")
 if classifier == "NN":
-    inputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/NN_analysis_samples"
-    outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Histo_Files_NN"
+    inputDir = analysis_path("NN_analysis_samples")
+    outputDir = analysis_path("Histo_Files_NN")
 
 ###Link to the dictonary that contains all the cross section informations etc...
 procDict = "FCCee_procDict_winter2023_IDEA.json"
