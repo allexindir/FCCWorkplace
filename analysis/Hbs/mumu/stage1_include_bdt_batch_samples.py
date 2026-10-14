@@ -7,6 +7,7 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 from userConfig import loc, train_vars
+from repo_paths import analysis_path
 import os, copy, urllib.request
 
 #Mandatory: List of processes
@@ -36,7 +37,7 @@ processList = {
     
 #Mandatory: Production tag when running over EDM4Hep centrally produced events, this points to the yaml files for getting sample statistics
 prodTag     = "FCCee/winter2023/IDEA/"
-outputDirEos= "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT_analysis_samples"
+outputDirEos= analysis_path("BDT_analysis_samples")
 eosType = "eosuser"
 nCPUS       = 3
 batchMemory = 5000
@@ -44,14 +45,14 @@ batchQueue = 'workday' #"longlunch"
 compGroup = "group_usfcc.asmith4"
 runBatch    = True
 
-outputDir = "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/temp_files_for_bdt_batch"
-#userBatchConfig = "/afs/cern.ch/user/d/dduan/private/FCCWorkplace/analysis/ZH_XSec/FinalReport/S240/mumu/userBatch.Config"
+outputDir = analysis_path("root_workspaces_for_bdt_batch")
 
 import ROOT
 vars_list = train_vars
 num_features = len(train_vars)
+bdt_model = analysis_path("BDT", "xgb_bdt.root")
 ROOT.gInterpreter.ProcessLine(f'''
-  TMVA::Experimental::RBDT<> bdt("Z_Recoil_BDT", "/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/BDT/xgb_bdt.root");
+  TMVA::Experimental::RBDT<> bdt("Z_Recoil_BDT", "{bdt_model}");
   computeModel1 = TMVA::Experimental::Compute<{num_features}, float>(bdt);
 ''')
 
