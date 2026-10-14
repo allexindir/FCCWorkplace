@@ -20,8 +20,14 @@ import ROOT
 
 ROOT.gROOT.SetBatch(True)
 
-HISTO_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Histo_Files")
-OUT_DIR   = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cards")
+CLASSIFIER = os.environ.get("HBS_CLASSIFIER", "BDT")
+if CLASSIFIER not in ("BDT", "NN"):
+    raise ValueError(f"HBS_CLASSIFIER must be BDT or NN, not '{CLASSIFIER}'")
+TAG = "_NN" if CLASSIFIER == "NN" else ""
+
+HISTO_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Histo_Files" + TAG)
+OUT_DIR   = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cards" + TAG)
+
 SELECTION = "sel_Baseline_no_costhetamiss"
 INT_LUMI  = 10.8e6          # pb^-1 (10.8 ab^-1, as in analysis_stage1_plots.py)
 XSEC_MUMUH = 0.0067643      # pb, wzp6_ee_mumuH_ecm240 -> BR = r * xsec_sample / XSEC_MUMUH

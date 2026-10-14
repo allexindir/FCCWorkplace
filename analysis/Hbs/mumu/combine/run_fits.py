@@ -15,7 +15,10 @@ import subprocess
 
 import ROOT
 
-CARDS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cards")
+CLASSIFIER = os.environ.get("HBS_CLASSIFIER", "BDT")
+if CLASSIFIER not in ("BDT", "NN"):
+    raise ValueError(f"HBS_CLASSIFIER must be BDT or NN, not '{CLASSIFIER}'")
+CARDS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cards" + ("_NN" if CLASSIFIER == "NN" else ""))
 XSEC_MUMUH = 0.0067643  # pb, for BR conversion
 
 SCENARIOS = ["Hbs", "Huu", "Hdd", "Hcu", "Hsd", "Hbd"]

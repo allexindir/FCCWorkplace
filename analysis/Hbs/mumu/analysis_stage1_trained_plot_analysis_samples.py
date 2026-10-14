@@ -14,6 +14,14 @@ stacksig       = ['stack','nostack']
 formats        = ['png','pdf']
 outdir         = '/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Final_Plots'
 
+import os
+classifier = os.environ.get("HBS_CLASSIFIER", "BDT")
+if classifier not in ("BDT", "NN"):
+    raise ValueError(f"HBS_CLASSIFIER must be BDT or NN, not '{classifier}'")
+if classifier == "NN":
+    inputDir   = '/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Histo_Files_NN/'
+    outdir     = '/usfcc/u/asmith4/Code/FCCWorkplace/analysis/Hbs/mumu/Final_Plots_NN'
+
 variables = [   #muons
                 "leading_zll_lepton_p",
                 "leading_zll_lepton_theta",
