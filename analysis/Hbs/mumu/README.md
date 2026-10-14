@@ -183,6 +183,34 @@ merged-exclusive ZH background): BR(H→bs), BR(H→bd) < 6×10⁻⁴ at 95% CL,
 by the true inclusive `wzp6_ee_mumuH_ecm240` histogram once it is produced — swap the
 `SM_HIGGS` list in `make_datacards.py` for that single process.
 
+## NN alternative to BDT:
+
+A scikit-learn MLPClassifier can be used in place of the BDT replacing steps 4 and 6, steps 1-3 are the
+same and steps 7-9 can be re-run with `HBS_CLASSIFIER=NN` 
+
+```bash
+python train_nn.py    # instead of step 4 -> loc.EOS/NN/nn_model.joblib + nn_preprocessing.json
+python apply_nn.py    # instead of step 6 -> <repo>/NN_analysis_samples/<sample>/chunk*.root
+
+HBS_CLASSIFIER=NN fccanalysis final analysis_stage1_trained_final_analysis_samples.py   # -> Histo_Files_NN/
+HBS_CLASSIFIER=NN fccanalysis plots analysis_stage1_trained_plot_analysis_samples.py    # -> Final_Plots_NN/
+# from the repo root:
+HBS_CLASSIFIER=NN ./run_combine.sh python3 analysis/Hbs/mumu/combine/make_datacards.py  # -> combine/cards_NN/
+HBS_CLASSIFIER=NN ./run_combine.sh python3 analysis/Hbs/mumu/combine/run_fits.py
+```
+
+- `train_nn.py` reads the same `preprocessed.pkl`, `train_vars` and class labels as
+  `train_multi.py`. Inputs are standardised (after `log(1+d)` for the jet merging
+  distances); the constants are saved next to the model. It writes its own loss,
+  accuracy and confusion-matrix plots to `loc.EOS/NN` (`multi_evaluation.py` is
+  XGBoost-specific).
+- `apply_nn.py` does not re-run stage 1: it reads the step 1–2 ntuples (`loc.TRAIN`),
+  evaluates the NN and writes copies with the scores attached. The scores keep the
+  BDT branch names (`BDTscore_class0..7`, `norm_prob0..5`) so that steps 7–9 need no
+  other change. Only flat branches are copied (the per-jet tagger vectors are dropped).
+- Without `HBS_CLASSIFIER` (or with `HBS_CLASSIFIER=BDT`) steps 7–9 run on the BDT
+  chain as before; the two sets of outputs live in separate directories.
+
 **Auxiliary scripts** (plain python, read stage-1 / BDT ntuples with uproot):
 - [visualize.py](../../../visualize.py) (repo root) — normalised shape overlays of every
   branch for all samples.

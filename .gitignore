@@ -110,6 +110,7 @@ job[0-9]*_*/
 analysis/Hbs/mumu/Jet_Checks/plots/
 analysis/Hbs/mumu/data/
 analysis/Hbs/mumu/BDT/
+analysis/Hbs/mumu/NN/
 
 # Kerberos / credentials #
 ##########################
