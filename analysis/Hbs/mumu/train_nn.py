@@ -19,7 +19,7 @@ NN_DIR = loc.EOS + '/NN'
 
 NUM_CLASSES = 8
 CLASS_NAMES = ["Hbs", "Huu", "Hdd", "Hcu", "Hsd", "Hbd", "SM_Higgs", "SM_bkg"]
-LOG_VARS = ["d12", "d23", "d34", "d45"]
+LOG_VARS = ["event_d12", "event_d23", "event_d34", "event_d45"]
 
 def run():
     vars_list = train_vars
@@ -68,11 +68,12 @@ def get_config_dict():
     return {
         "hidden_layers": [128, 128, 128, 64],
         "activation": "relu",
-        "alpha": 1e-4,
         "lr": 1e-3,
-        "batch_size": 512,
-        "epochs": 100,
-        "early_stopping_round": 10,
+        "l2": 1e-4,
+        "eps": 1e-7,
+        "batch_size": 128,
+        "epochs": 1000,
+        "early_stopping_round": None,
         "seed": 7,
     }
 
@@ -100,7 +101,8 @@ def build_model(config):
            hidden_layer_sizes = tuple(config["hidden_layers"]),
            activation = config['activation'],
            solver = 'adam',
-           alpha = config['alpha'],
+           alpha = 2 * config['l2'] * config['batch_size'],
+           epsilon = config['eps'],
            learning_rate_init = config['lr'],
            batch_size = config['batch_size'],
            shuffle = True,
@@ -135,7 +137,7 @@ def train_model(model, X_train, y_train, X_valid, y_valid, config):
         if history["val_loss"][-1] < best_loss:
             best_loss, best_epoch = history["val_loss"][-1], epoch
             best_weights = copy.deepcopy((model.coefs_, model.intercepts_))
-        elif epoch - best_epoch >= patience:
+        elif patience is not None and epoch - best_epoch >= patience:
             print(f"Early stopping: no improvement of val_loss for {patience} epochs")
             break
 
