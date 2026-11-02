@@ -1,0 +1,41 @@
+# Mapping from our process directories (NN_analysis_samples/<process>/) to the
+# sample names fcc-fv-analysis expects. Read by merge_fv_inputs.py and
+# make_fv_procdict.py.
+#
+# Their catalog looks for <sample>_ecm240_finalsel.root, and their fitter builds
+# signal names as wzp6_ee_<mode>H_H<decay> and parses <decay> with
+# _H([^_]+)_ecm$, so the _W4p1MeV and _noInv suffixes have to go.
+#
+# "-" marks a process apply_nn.py scored that must NOT be used.
+#
+# our process directory                 their sample name
+
+# FCNC signals (classes Hbs, Huu, Hdd, Hcu, Hsd, Hbd)
+wzp6_ee_mumuH_Hbs_W4p1MeV_ecm240        wzp6_ee_mumuH_Hbs
+wzp6_ee_mumuH_Huu_ecm240                wzp6_ee_mumuH_Huu
+wzp6_ee_mumuH_Hdd_ecm240                wzp6_ee_mumuH_Hdd
+wzp6_ee_mumuH_Hcu_W4p1MeV_ecm240        wzp6_ee_mumuH_Hcu
+wzp6_ee_mumuH_Hsd_W4p1MeV_ecm240        wzp6_ee_mumuH_Hsd
+wzp6_ee_mumuH_Hbd_W4p1MeV_ecm240        wzp6_ee_mumuH_Hbd
+
+# SM Higgs decays (class SM_Higgs), as in SM_HIGGS of combine/make_datacards.py
+wzp6_ee_mumuH_Hbb_ecm240                wzp6_ee_mumuH_Hbb
+wzp6_ee_mumuH_Hcc_ecm240                wzp6_ee_mumuH_Hcc
+wzp6_ee_mumuH_Hss_ecm240                wzp6_ee_mumuH_Hss
+wzp6_ee_mumuH_Hgg_ecm240                wzp6_ee_mumuH_Hgg
+wzp6_ee_mumuH_HWW_ecm240                wzp6_ee_mumuH_HWW
+wzp6_ee_mumuH_HZZ_noInv_ecm240          wzp6_ee_mumuH_HZZ
+wzp6_ee_mumuH_Htautau_ecm240            wzp6_ee_mumuH_Htautau
+wzp6_ee_mumuH_HZa_ecm240                wzp6_ee_mumuH_HZa
+
+# non-Higgs backgrounds (class background)
+p8_ee_ZZ_ecm240                         p8_ee_ZZ
+p8_ee_WW_ecm240                         p8_ee_WW
+wzp6_ee_mumu_ecm240                     wzp6_ee_mumu
+wzp6_egamma_eZ_Zmumu_ecm240             wzp6_egamma_eZ_Zmumu
+wzp6_gammae_eZ_Zmumu_ecm240             wzp6_gammae_eZ_Zmumu
+wzp6_gaga_mumu_60_ecm240                wzp6_gaga_mumu_60
+
+# scored by apply_nn.py but not part of our chain
+wzp6_ee_mumuH_ecm240                    -    # inclusive ZH, duplicates the exclusive decays above
+wzp6_ee_mumuH_HZZ_ecm240                -    # our chain uses HZZ_noInv
