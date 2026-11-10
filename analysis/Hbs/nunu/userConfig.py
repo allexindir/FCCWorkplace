@@ -147,7 +147,8 @@ mode_names = {
     "nuenueZ":      'wzp6_ee_nuenueZ_ecm240',
 
     # Standard Model Backgrounds
-    "nunuH":        "wzp6_ee_nunuH_ecm240",
+    #"nunuH":        "wzp6_ee_nunuH_ecm240",
+    "Zqq":          "p8_ee_Zqq_ecm240",
     "ZZ":           "p8_ee_ZZ_ecm240",
     "WW":           "p8_ee_WW_ecm240",
 }

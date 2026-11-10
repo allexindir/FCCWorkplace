@@ -1,0 +1,39 @@
+# Mapping from our process directories (NN_analysis_samples/<process>/) to the
+# sample names fcc-fv-analysis expects. Read by merge_fv_inputs.py and
+# make_fv_procdict.py.
+#
+# Their catalog looks for <sample>_ecm240_finalsel.root, and their fitter builds
+# signal names as wzp6_ee_<mode>H_H<decay> and parses <decay> with
+# _H([^_]+)_ecm$, so the _W4p1MeV and _noInv suffixes have to go.
+#
+# "-" marks a process apply_nn.py scored that must NOT be used.
+#
+# our process directory                 their sample name
+
+# FCNC signals (classes Hbs, Huu, Hdd, Hcu, Hsd, Hbd)
+wzp6_ee_nunuH_Hbs_W4p1MeV_ecm240        wzp6_ee_nunuH_Hbs
+wzp6_ee_nunuH_Huu_ecm240                wzp6_ee_nunuH_Huu
+wzp6_ee_nunuH_Hdd_ecm240                wzp6_ee_nunuH_Hdd
+wzp6_ee_nunuH_Hcu_W4p1MeV_ecm240        wzp6_ee_nunuH_Hcu
+wzp6_ee_nunuH_Hsd_W4p1MeV_ecm240        wzp6_ee_nunuH_Hsd
+wzp6_ee_nunuH_Hbd_W4p1MeV_ecm240        wzp6_ee_nunuH_Hbd
+
+# SM Higgs decays (class SM_Higgs), as in SM_HIGGS of combine/make_datacards.py
+wzp6_ee_nunuH_Hbb_ecm240                wzp6_ee_nunuH_Hbb
+wzp6_ee_nunuH_Hcc_ecm240                wzp6_ee_nunuH_Hcc
+wzp6_ee_nunuH_Hss_ecm240                wzp6_ee_nunuH_Hss
+wzp6_ee_nunuH_Hgg_ecm240                wzp6_ee_nunuH_Hgg
+wzp6_ee_nunuH_HWW_ecm240                wzp6_ee_nunuH_HWW
+wzp6_ee_nunuH_HZZ_noInv_ecm240          wzp6_ee_nunuH_HZZ
+wzp6_ee_nunuH_Htautau_ecm240            wzp6_ee_nunuH_Htautau
+wzp6_ee_nunuH_HZa_ecm240                wzp6_ee_nunuH_HZa
+
+# non-Higgs backgrounds (class background)
+p8_ee_ZZ_ecm240                         p8_ee_ZZ
+p8_ee_WW_ecm240                         p8_ee_WW
+p8_ee_Zqq_ecm240                        p8_ee_Zqq
+wzp6_ee_nuenueZ_ecm240                  wzp6_ee_nuenueZ
+
+# scored by apply_nn.py but not part of our chain
+wzp6_ee_nunuH_ecm240                    -    # inclusive ZH, duplicates the exclusive decays above
+wzp6_ee_nunuH_HZZ_ecm240                -    # our chain uses HZZ_noInv
