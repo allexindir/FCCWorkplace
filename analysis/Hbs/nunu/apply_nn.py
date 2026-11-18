@@ -23,7 +23,7 @@ from train_nn import NN_DIR, NUM_CLASSES, load_model, preprocess, predict_proba
 # is copied over (with PyROOT: uproot cannot write TParameter objects).
 
 INPUT_DIR = loc.TRAIN
-OUTPUT_DIR = loc.EOS + '/NN_analysis_samples'
+OUTPUT_DIR = loc.NN_SCORED 
 
 # counters written by fccanalysis next to the events tree
 META = ["eventsProcessed", "eventsSelected", "eventsInput"]
@@ -34,6 +34,9 @@ STEP_SIZE = 500000  # events read / evaluated / written at a time
 def run(input_dir, output_dir, processes):
 
     model, prep = load_model(NN_DIR)
+    if prep.get("presel") != PRESEL:
+        sys.exit(f"ERROR: attempting to score with a model that conflicts with the directory: {prep.get("presel")} != {PRESEL}")
+
     vars_list = prep["vars"]
     print("NN INPUT VARS")
     print(vars_list)

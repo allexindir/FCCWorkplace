@@ -15,7 +15,7 @@ from sklearn.metrics import log_loss, accuracy_score, confusion_matrix, Confusio
 
 from userConfig import loc, train_vars
 
-NN_DIR = loc.EOS + '/NN'
+NN_DIR = loc.NN
 
 NUM_CLASSES = 8
 CLASS_NAMES = ["Hbs", "Huu", "Hdd", "Hcu", "Hsd", "Hbd", "SM_Higgs", "SM_bkg"]
@@ -156,6 +156,8 @@ def save_model(model, prep, out_path):
     print(f"------>Saving {out_path}/nn_preprocessing.json")
     with open(f"{out_path}/nn_preprocessing.json", "w") as f:
         json.dump({
+            "presel": PRESEL,
+            "cuts": presel_cuts,
             "vars": prep["vars"],
             "log": [bool(b) for b in prep["log"]],
             "mean": [float(x) for x in prep["mean"]],

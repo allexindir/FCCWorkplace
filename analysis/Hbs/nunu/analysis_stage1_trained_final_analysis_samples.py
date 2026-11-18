@@ -6,14 +6,14 @@ import sys
 # particular user area (override with FCCWORKPLACE_ROOT).
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from repo_paths import analysis_path
+from userConfig import presel_string
 
 
 #python examples/FCCee/higgs/mH-recoil/mumu/finalSel.py
 #Input directory where the files produced at the pre-selection level are
-inputDir = analysis_path("NN_analysis_samples")
-
+inputDir = loc.NN_SCORED
 #Output directory for the plotting script
-outputDir = analysis_path("Histo_Files_NN")
+outputDir = loc.HISTO_NN 
 
 ###Link to the dictonary that contains all the cross section informations etc...
 procDict = "FCCee_procDict_winter2023_IDEA.json"
@@ -63,9 +63,14 @@ processList = [
 ]
 
 #Number of CPUs to use
-nCPUS = 2
+nCPUS = 3
 #produces ROOT TTrees, default is False
 doTree = False
+
+defineList = {
+    "abs_cosTheta_miss": "std::abs(cosTheta_miss)",
+    "e_vis_plus_p_miss": "higgs_e + met_p",
+}
 
 ###Dictionary of the list of cuts. The key is the name of the selection that will be added to the output file
 # Stage 1 already requires no isolated e/mu with p > 20 GeV, missing_m > 40 GeV
@@ -76,7 +81,8 @@ doTree = False
 cutList = {
             #Without Cuts
             "No_Cuts":"1",
-            "APC_Cuts":"higgs_m < 140 && higgs_m > 120 && missing_m > 81 && missing_m < 101 && event_d23 > 0 && event_d34 > 0"
+            # "APC_Cuts":"higgs_m < 140 && higgs_m > 120 && missing_m > 81 && missing_m < 101 && event_d23 > 0 && event_d34 > 0",
+            "sel_Presel": presel_string(),
             }
 
 ###Dictionary for the ouput variable/hitograms. The key is the name of the variable in the output files. "name" is the name of the variable in the input file, "title" is the x-axis label of the histogram, "bin" the number of bins of the histogram, "xmin" the minimum x-axis value and "xmax" the maximum x-axis value.
@@ -93,6 +99,8 @@ histoList = {
     "met_theta": {"name": "met_theta", "title": "#theta_{miss}", "bin": 100, "xmin": 0, "xmax": np.pi},
     "met_phi": {"name": "met_phi", "title": "#phi_{miss}", "bin": 100, "xmin": -np.pi, "xmax": np.pi},
     "cosTheta_miss": {"name": "cosTheta_miss", "title": "cos#theta_{miss}", "bin": 100, "xmin": -1, "xmax": 1},
+    "abs_cosTheta_miss": {"name": "abs_cosTheta_miss", "title": "|cos#theta_{miss}|", "bin": 50, "xmin": 0, "xmax": 1},
+    
 
     # ── Higgs Candidate (dijet) ────────────────────────────────────────────────
     "higgs_m": {"name": "higgs_m", "title": "m_{jj} [GeV]", "bin": 100, "xmin": 0, "xmax": 200},
@@ -102,6 +110,7 @@ histoList = {
     "higgs_theta": {"name": "higgs_theta", "title": "#theta_{jj}", "bin": 100, "xmin": 0, "xmax": np.pi},
     "jets_acolinearity": {"name": "jets_acolinearity", "title": "|#theta_{j1} + #theta_{j2} - #pi|", "bin": 100, "xmin": 0, "xmax": 3.2},
     "jets_acoplanarity": {"name": "jets_acoplanarity", "title": "#pi - |#Delta#phi_{jj}|", "bin": 100, "xmin": 0, "xmax": 3.2},
+    "e_vis_plus_p_miss": {"name": "e_vis_plus_p_miss", "title": "E_{vis} + |p_{miss}| [GeV]", "bin": 100, "xmin": 150, "xmax": 260},
 
     # ── Jet Flavor Tagging Scores ──────────────────────────────────────────────
     # The tagger output saturates at exactly 1 (e.g. the tau score of ~6% of

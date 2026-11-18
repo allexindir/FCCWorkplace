@@ -22,7 +22,7 @@ collider       = 'FCC-ee'
 # separator, so the trailing one is required.
 inputDir       = analysis_path("Histo_Files_NN") + os.sep
 yaxis          = ['lin','log']
-stacksig       = ['stack','nostack']
+stacksig       = ['nostack']
 formats        = ['png','pdf']
 outdir         = analysis_path("Final_Plots_NN")
 
@@ -32,6 +32,7 @@ variables = [   #missing momentum
                 "cosTheta_miss",
                 #Higgs candidate (dijet)
                 "higgs_m", "higgs_p", "higgs_pt", "higgs_e", "higgs_theta",
+                "abs_cosTheta_miss", "e_vis_plus_p_miss",
                 "jets_acolinearity", "jets_acoplanarity",
                 #tag scores
                 "btag_max", "stag_other",
@@ -59,7 +60,8 @@ variables = [   #missing momentum
 
 selections = {}
 selections['nunuH'] = ["No_Cuts",
-                       "APC_Cuts"
+                    #    "APC_Cuts",
+                       "sel_Presel",
                       ]
 
 colors = {}
@@ -122,8 +124,10 @@ plots['nunuH'] = {
 
 legend = {}
 extralabel = {}
-extralabel["APC_Cuts"]                = ""
+# extralabel["APC_Cuts"]                = ""
 extralabel["No_Cuts"]                 = ""
+extralabel["sel_Presel"]              = ""
+
 
 # --- Shortened Legend Labels ---
 
