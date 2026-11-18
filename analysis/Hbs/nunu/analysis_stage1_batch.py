@@ -173,8 +173,6 @@ class RDFanalysis():
         
         df = df.Define("missing_m", "TLorentzVector(met_rp[0].momentum.x, met_rp[0].momentum.y, met_rp[0].momentum.z,met_rp[0].energy).M()")
 
-        df = df.Filter("missing_m > 40") 
-
         # ── exclusive 2-jet clustering on hadronic system ──────────────────────
         global jetClusteringHelper, jetFlavourHelper
 
