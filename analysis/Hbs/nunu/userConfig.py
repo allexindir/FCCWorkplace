@@ -16,7 +16,7 @@ loc.ROOT        = repo
 loc.OUT         = analysis_path('output_trained')
 loc.DATA        = analysis_path('data')
 loc.CSV         = os.path.join(loc.DATA, 'csv')
-loc.PKL         = os.path.join(loc.DATA, 'pkl')
+loc.PKL         = os.path.join(loc.DATA, 'pkl', PRESEL)
 loc.PKL_Val     = os.path.join(loc.DATA, 'pkl_val')
 loc.ROOTFILES   = os.path.join(loc.DATA, 'ROOT')
 loc.PLOTS       = os.path.join(loc.DATA, 'plots')
@@ -31,6 +31,9 @@ loc.TRAIN2   = analysis_path('Training_4stage2')
 
 # Trained BDT: xgb_bdt.root (TMVA) + xgb_bdt.joblib (step 4).
 loc.BDT      = analysis_path('BDT')
+loc.NN = analysis_path("NN", PRESEL)
+loc.NN_SCORED = analysis_path("NN_analysis_samples", PRESEL)
+loc.HISTO_NN = analysis_path("Histo_Files_NN", PRESEL)
 # Stage-1 ntuples as the batch jobs write them — the outputDir of
 # analysis_stage1_batch.py / analysis_stage1_outsideData.py — read back as the
 # BDT training input by process_sig_bkg_samples_for_{xgb,multi}.py (step 3).
@@ -61,6 +64,25 @@ train_vars = [
     "jet1_tautag", "jet2_tautag",
     # "btag_max",  "stag_other",
 ]
+
+cuts = {
+    "mjj": "higgs_m > 118", "higgs_m < 130",
+    "mmiss": "missing_m > 80", "missing_m < 100",
+    "pmiss": "met_p > 40", "met_p < 60",
+    "ptmiss": "met_pt > 10", 
+    "costhetamiss": "abs(cosTheta_miss) < 0.9",
+    "tauveto": "jet1_tautag < 0.5 && jet2_tautag < 0.5",
+    "dmerge": "event_d23 > 0 && event_d34 > 0",
+}
+
+presets = {
+    "none": [],
+    "simple": ["pmiss", "costhetamiss"],
+    "all": list(cuts),
+}
+
+PRESEL = os.environ.get("HBS_PRESEL", "all")
+presel_cuts = [cuts[c] for c in presets[PRESEL]]
 
 latex_mapping = {
     "met_p":                        r"$p_{\mathrm{miss}}$",
